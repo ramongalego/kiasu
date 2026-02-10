@@ -13,7 +13,7 @@ export function Header() {
     <header className="sticky top-0 z-50 border-b border-border/50 bg-background/60 backdrop-blur-xl">
       <Container className="flex h-16 items-center justify-between">
         <Link
-          href="/"
+          href={user ? "/dashboard" : "/"}
           className="flex items-center gap-2 transition-opacity duration-200 hover:opacity-80"
         >
           <BookOpen className="h-6 w-6 text-primary" />

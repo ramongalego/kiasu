@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui";
+import { studyListSchema } from "@/lib/validations/schemas";
 import { X, Trash2 } from "lucide-react";
 import { useState, type FormEvent } from "react";
 import type { StudyListWithItemCount } from "@/types";
@@ -21,14 +22,30 @@ export function EditStudyListModal({
   onDelete,
 }: EditStudyListModalProps) {
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   if (!open) return null;
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
-    const title = (formData.get("title") as string)?.trim();
-    if (!title) return;
+    const result = studyListSchema.safeParse({
+      title: formData.get("title") as string,
+      description: formData.get("description") as string,
+    });
+
+    if (!result.success) {
+      const flat = result.error.flatten();
+      const fieldErrors: Record<string, string> = {};
+      for (const [key, msgs] of Object.entries(flat.fieldErrors)) {
+        const msg = msgs?.[0];
+        if (msg) fieldErrors[key] = msg;
+      }
+      setErrors(fieldErrors);
+      return;
+    }
+
+    setErrors({});
     onSubmit(formData);
     onClose();
   };
@@ -41,6 +58,7 @@ export function EditStudyListModal({
 
   const handleClose = () => {
     setConfirmDelete(false);
+    setErrors({});
     onClose();
   };
 
@@ -66,33 +84,40 @@ export function EditStudyListModal({
           <div className="space-y-4">
             <div>
               <label htmlFor="edit-title" className="block text-sm font-medium">
-                Title
+                Title <span className="text-destructive">*</span>
               </label>
               <input
                 id="edit-title"
                 name="title"
                 type="text"
-                required
                 autoFocus
                 defaultValue={list.title}
-                className="mt-1 block w-full rounded-xl border border-border/50 bg-muted/50 px-3 py-2 text-sm placeholder:text-muted-foreground focus:border-border focus:outline-none focus:ring-2 focus:ring-ring transition-all duration-200"
+                className={`mt-1 block w-full rounded-xl border ${errors.title ? "border-destructive" : "border-border/50"} bg-muted/50 px-3 py-2 text-sm placeholder:text-muted-foreground focus:border-border focus:outline-none focus:ring-2 focus:ring-ring transition-all duration-200`}
               />
+              {errors.title && (
+                <p className="mt-1 text-xs text-destructive">{errors.title}</p>
+              )}
             </div>
             <div>
               <label
                 htmlFor="edit-description"
                 className="block text-sm font-medium"
               >
-                Description (optional)
+                Description
               </label>
               <textarea
                 id="edit-description"
                 name="description"
                 rows={3}
                 defaultValue={list.description ?? ""}
-                className="mt-1 block w-full resize-none rounded-xl border border-border/50 bg-muted/50 px-3 py-2 text-sm placeholder:text-muted-foreground focus:border-border focus:outline-none focus:ring-2 focus:ring-ring transition-all duration-200"
+                className={`mt-1 block w-full resize-none rounded-xl border ${errors.description ? "border-destructive" : "border-border/50"} bg-muted/50 px-3 py-2 text-sm placeholder:text-muted-foreground focus:border-border focus:outline-none focus:ring-2 focus:ring-ring transition-all duration-200`}
                 placeholder="What is this study list about?"
               />
+              {errors.description && (
+                <p className="mt-1 text-xs text-destructive">
+                  {errors.description}
+                </p>
+              )}
             </div>
           </div>
           {confirmDelete ? (

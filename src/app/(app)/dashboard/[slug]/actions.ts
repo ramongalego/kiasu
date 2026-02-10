@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma/client";
+import { studyItemSchema } from "@/lib/validations/schemas";
 import { revalidatePath } from "next/cache";
 
 export async function createStudyItem(
@@ -27,13 +28,17 @@ export async function createStudyItem(
     return { error: "Study list not found" };
   }
 
-  const title = formData.get("title") as string;
-  const notes = (formData.get("notes") as string) || null;
-  const url = (formData.get("url") as string) || null;
+  const parsed = studyItemSchema.safeParse({
+    title: (formData.get("title") as string) ?? "",
+    url: (formData.get("url") as string) ?? "",
+    notes: (formData.get("notes") as string) ?? "",
+  });
 
-  if (!title || title.trim().length === 0) {
-    return { error: "Title is required" };
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Validation failed" };
   }
+
+  const { title, url, notes } = parsed.data;
 
   // Get next position
   const lastItem = await prisma.studyItem.findFirst({
@@ -43,9 +48,9 @@ export async function createStudyItem(
 
   await prisma.studyItem.create({
     data: {
-      title: title.trim(),
-      notes: notes?.trim() || null,
-      url: url?.trim() || null,
+      title,
+      notes: notes || null,
+      url: url || null,
       position: (lastItem?.position ?? -1) + 1,
       studyListId,
     },
@@ -134,20 +139,24 @@ export async function updateStudyItem(
     return { error: "Item not found" };
   }
 
-  const title = formData.get("title") as string;
-  const notes = (formData.get("notes") as string) || null;
-  const url = (formData.get("url") as string) || null;
+  const parsed = studyItemSchema.safeParse({
+    title: (formData.get("title") as string) ?? "",
+    url: (formData.get("url") as string) ?? "",
+    notes: (formData.get("notes") as string) ?? "",
+  });
 
-  if (!title || title.trim().length === 0) {
-    return { error: "Title is required" };
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Validation failed" };
   }
+
+  const { title, url, notes } = parsed.data;
 
   await prisma.studyItem.update({
     where: { id: itemId },
     data: {
-      title: title.trim(),
-      notes: notes?.trim() || null,
-      url: url?.trim() || null,
+      title,
+      notes: notes || null,
+      url: url || null,
     },
   });
 

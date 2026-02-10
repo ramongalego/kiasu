@@ -1,5 +1,7 @@
 import { Button, Container } from "@/components/ui";
 import { BookOpen, Share2, CheckSquare, Users } from "lucide-react";
+import { createClient } from "@/lib/supabase/server";
+import { redirect } from "next/navigation";
 import Link from "next/link";
 
 const features = [
@@ -28,7 +30,16 @@ const features = [
   },
 ];
 
-export default function HomePage() {
+export default async function HomePage() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (user) {
+    redirect("/dashboard");
+  }
+
   return (
     <>
       {/* Hero */}

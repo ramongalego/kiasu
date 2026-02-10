@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma/client";
+import { studyListSchema } from "@/lib/validations/schemas";
 import { generateSlug } from "@/lib/utils";
 import { revalidatePath } from "next/cache";
 
@@ -15,12 +16,16 @@ export async function createStudyList(formData: FormData) {
     return { error: "Not authenticated" };
   }
 
-  const title = formData.get("title") as string;
-  const description = (formData.get("description") as string) || null;
+  const parsed = studyListSchema.safeParse({
+    title: (formData.get("title") as string) ?? "",
+    description: (formData.get("description") as string) ?? "",
+  });
 
-  if (!title || title.trim().length === 0) {
-    return { error: "Title is required" };
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Validation failed" };
   }
+
+  const { title, description } = parsed.data;
 
   let slug = generateSlug(title);
 
@@ -35,8 +40,8 @@ export async function createStudyList(formData: FormData) {
 
   await prisma.studyList.create({
     data: {
-      title: title.trim(),
-      description: description?.trim() || null,
+      title,
+      description: description || null,
       slug,
       isPublic: true,
       userId: user.id,
@@ -58,12 +63,17 @@ export async function updateStudyList(formData: FormData) {
   }
 
   const id = formData.get("id") as string;
-  const title = formData.get("title") as string;
-  const description = (formData.get("description") as string) || null;
 
-  if (!title || title.trim().length === 0) {
-    return { error: "Title is required" };
+  const parsed = studyListSchema.safeParse({
+    title: (formData.get("title") as string) ?? "",
+    description: (formData.get("description") as string) ?? "",
+  });
+
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Validation failed" };
   }
+
+  const { title, description } = parsed.data;
 
   // Verify ownership
   const existing = await prisma.studyList.findFirst({
@@ -75,7 +85,7 @@ export async function updateStudyList(formData: FormData) {
   }
 
   let slug = existing.slug;
-  if (title.trim() !== existing.title) {
+  if (title !== existing.title) {
     slug = generateSlug(title);
     const slugTaken = await prisma.studyList.findFirst({
       where: { userId: user.id, slug, id: { not: id } },
@@ -88,8 +98,8 @@ export async function updateStudyList(formData: FormData) {
   await prisma.studyList.update({
     where: { id },
     data: {
-      title: title.trim(),
-      description: description?.trim() || null,
+      title,
+      description: description || null,
       slug,
     },
   });
