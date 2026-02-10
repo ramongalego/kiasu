@@ -35,6 +35,7 @@ export default async function StudyListPage({
         slug={slug}
         title={studyList.title}
         description={studyList.description}
+        isPublic={studyList.isPublic}
       />
     </Container>
   );

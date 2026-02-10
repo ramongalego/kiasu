@@ -20,6 +20,7 @@ interface StudyItemListProps {
   slug: string;
   title: string;
   description: string | null;
+  isPublic: boolean;
 }
 
 function itemReducer(
@@ -48,6 +49,7 @@ export function StudyItemList({
   slug,
   title,
   description,
+  isPublic,
 }: StudyItemListProps) {
   const [, startTransition] = useTransition();
   const [createModalOpen, setCreateModalOpen] = useState(false);
@@ -131,6 +133,8 @@ export function StudyItemList({
       <StudyListHeader
         title={title}
         description={description}
+        listId={studyListId}
+        isPublic={isPublic}
         onCreateClick={() => setCreateModalOpen(true)}
       />
 

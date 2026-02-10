@@ -38,12 +38,14 @@ export async function createStudyList(formData: FormData) {
     slug = `${slug}-${Date.now()}`;
   }
 
+  const isPublic = formData.get("isPublic") === "true";
+
   await prisma.studyList.create({
     data: {
       title,
       description: description || null,
       slug,
-      isPublic: true,
+      isPublic,
       userId: user.id,
     },
   });
@@ -95,12 +97,15 @@ export async function updateStudyList(formData: FormData) {
     }
   }
 
+  const isPublic = formData.get("isPublic") === "true";
+
   await prisma.studyList.update({
     where: { id },
     data: {
       title,
       description: description || null,
       slug,
+      isPublic,
     },
   });
 

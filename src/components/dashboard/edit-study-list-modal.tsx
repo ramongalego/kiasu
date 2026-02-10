@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui";
 import { studyListSchema } from "@/lib/validations/schemas";
-import { X, Trash2 } from "lucide-react";
+import { X, Trash2, Globe, Lock } from "lucide-react";
 import { useState, type FormEvent } from "react";
 import type { StudyListWithItemCount } from "@/types";
 
@@ -23,6 +23,7 @@ export function EditStudyListModal({
 }: EditStudyListModalProps) {
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isPublic, setIsPublic] = useState(list.isPublic);
 
   if (!open) return null;
 
@@ -120,6 +121,28 @@ export function EditStudyListModal({
               )}
             </div>
           </div>
+          <input type="hidden" name="isPublic" value={String(isPublic)} />
+          <button
+            type="button"
+            onClick={() => setIsPublic((v) => !v)}
+            className="flex w-full cursor-pointer items-center gap-3 rounded-xl border border-border/50 p-3 text-left transition-colors duration-200 hover:bg-muted/50"
+          >
+            {isPublic ? (
+              <Globe className="h-4 w-4 shrink-0 text-muted-foreground" />
+            ) : (
+              <Lock className="h-4 w-4 shrink-0 text-muted-foreground" />
+            )}
+            <div>
+              <p className="text-sm font-medium">
+                {isPublic ? "Public" : "Private"}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {isPublic
+                  ? "Anyone with the link can view this list"
+                  : "Only you can see this list"}
+              </p>
+            </div>
+          </button>
           {confirmDelete ? (
             <div className="space-y-3 rounded-xl border border-destructive/20 bg-destructive/5 p-3">
               <p className="text-sm text-destructive">

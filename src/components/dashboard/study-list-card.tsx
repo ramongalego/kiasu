@@ -2,7 +2,7 @@
 
 import { Card } from "@/components/ui";
 import { EditStudyListModal } from "./edit-study-list-modal";
-import { BookOpen, Pencil } from "lucide-react";
+import { BookOpen, Lock, Pencil } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import type { OptimisticStudyListWithItemCount } from "@/types";
@@ -32,6 +32,12 @@ export function StudyListCard({ list, onEdit, onDelete }: StudyListCardProps) {
           >
             <BookOpen className="h-5 w-5 text-primary" />
             <h3 className="font-semibold">{list.title}</h3>
+            {!list.isPublic && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
+                <Lock className="h-3 w-3" />
+                Private
+              </span>
+            )}
           </Link>
           <button
             onClick={() => setEditOpen(true)}
