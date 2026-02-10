@@ -46,13 +46,16 @@ export function EditStudyListModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/50" onClick={handleClose} />
-      <div className="relative w-full max-w-md rounded-xl border border-border bg-background p-6 shadow-lg">
+      <div
+        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+        onClick={handleClose}
+      />
+      <div className="relative w-full max-w-md rounded-xl border border-border/50 bg-card p-6 shadow-2xl">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold">Edit study list</h2>
           <button
             onClick={handleClose}
-            className="cursor-pointer rounded-lg p-1 hover:bg-muted transition-colors"
+            className="cursor-pointer rounded-lg p-1 transition-colors duration-200 hover:bg-muted"
           >
             <X className="h-5 w-5" />
           </button>
@@ -72,7 +75,7 @@ export function EditStudyListModal({
                 required
                 autoFocus
                 defaultValue={list.title}
-                className="mt-1 block w-full rounded-lg border border-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                className="mt-1 block w-full rounded-xl border border-border/50 bg-muted/50 px-3 py-2 text-sm placeholder:text-muted-foreground focus:border-border focus:outline-none focus:ring-2 focus:ring-ring transition-all duration-200"
               />
             </div>
             <div>
@@ -87,13 +90,13 @@ export function EditStudyListModal({
                 name="description"
                 rows={3}
                 defaultValue={list.description ?? ""}
-                className="mt-1 block w-full rounded-lg border border-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none"
+                className="mt-1 block w-full resize-none rounded-xl border border-border/50 bg-muted/50 px-3 py-2 text-sm placeholder:text-muted-foreground focus:border-border focus:outline-none focus:ring-2 focus:ring-ring transition-all duration-200"
                 placeholder="What is this study list about?"
               />
             </div>
           </div>
           {confirmDelete ? (
-            <div className="space-y-3 rounded-lg border border-destructive/20 bg-destructive/5 p-3">
+            <div className="space-y-3 rounded-xl border border-destructive/20 bg-destructive/5 p-3">
               <p className="text-sm text-destructive">
                 This will permanently delete <strong>{list.title}</strong> and
                 all {list._count.items}{" "}
@@ -128,7 +131,7 @@ export function EditStudyListModal({
                     ? setConfirmDelete(true)
                     : handleDelete()
                 }
-                className="flex cursor-pointer items-center gap-2 text-sm text-muted-foreground hover:text-destructive transition-colors"
+                className="flex cursor-pointer items-center gap-2 text-sm text-muted-foreground transition-colors duration-200 hover:text-destructive"
               >
                 <Trash2 className="h-4 w-4" />
                 Delete

@@ -25,13 +25,13 @@ export function StudyItemRow({
     <>
       <div
         className={cn(
-          "flex items-center gap-3 rounded-lg border border-border p-4 transition-colors hover:bg-muted/50",
-          item.pending && "opacity-70 pointer-events-none",
+          "flex items-center gap-3 rounded-xl border border-border/50 p-4 transition-all duration-200 hover:border-border hover:bg-muted/50",
+          item.pending && "pointer-events-none opacity-70",
         )}
       >
         <button
           onClick={onToggle}
-          className="flex h-5 w-5 shrink-0 cursor-pointer items-center justify-center rounded border border-border transition-colors data-[checked=true]:border-primary data-[checked=true]:bg-primary"
+          className="flex h-5 w-5 shrink-0 cursor-pointer items-center justify-center rounded border border-border transition-all duration-200 data-[checked=true]:border-primary data-[checked=true]:bg-primary"
           data-checked={item.completed}
         >
           {item.completed ? (
@@ -51,14 +51,14 @@ export function StudyItemRow({
           ) : null}
         </button>
 
-        <div className="flex-1 min-w-0">
+        <div className="min-w-0 flex-1">
           <p
-            className={`text-sm font-medium ${item.completed ? "line-through text-muted-foreground" : ""}`}
+            className={`text-sm font-medium ${item.completed ? "text-muted-foreground line-through" : ""}`}
           >
             {item.title}
           </p>
           {item.notes && (
-            <p className="mt-0.5 text-xs text-muted-foreground truncate">
+            <p className="mt-0.5 truncate text-xs text-muted-foreground">
               {item.notes}
             </p>
           )}
@@ -70,7 +70,7 @@ export function StudyItemRow({
               href={item.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="cursor-pointer rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+              className="cursor-pointer rounded-lg p-1.5 text-muted-foreground transition-colors duration-200 hover:bg-muted hover:text-foreground"
               onClick={(e) => e.stopPropagation()}
             >
               <ExternalLink className="h-4 w-4" />
@@ -78,13 +78,13 @@ export function StudyItemRow({
           )}
           <button
             onClick={() => setEditOpen(true)}
-            className="cursor-pointer rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+            className="cursor-pointer rounded-lg p-1.5 text-muted-foreground transition-colors duration-200 hover:bg-muted hover:text-foreground"
           >
             <Pencil className="h-4 w-4" />
           </button>
           <button
             onClick={onDelete}
-            className="cursor-pointer rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-destructive transition-colors"
+            className="cursor-pointer rounded-lg p-1.5 text-muted-foreground transition-colors duration-200 hover:bg-muted hover:text-destructive"
           >
             <Trash2 className="h-4 w-4" />
           </button>

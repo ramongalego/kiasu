@@ -31,13 +31,16 @@ export function CreateStudyListModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      <div className="relative w-full max-w-md rounded-xl border border-border bg-background p-6 shadow-lg">
+      <div
+        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+        onClick={onClose}
+      />
+      <div className="relative w-full max-w-md rounded-xl border border-border/50 bg-card p-6 shadow-2xl">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold">Create study list</h2>
           <button
             onClick={onClose}
-            className="cursor-pointer rounded-lg p-1 hover:bg-muted transition-colors"
+            className="cursor-pointer rounded-lg p-1 transition-colors duration-200 hover:bg-muted"
           >
             <X className="h-5 w-5" />
           </button>
@@ -55,7 +58,7 @@ export function CreateStudyListModal({
                 type="text"
                 required
                 autoFocus
-                className="mt-1 block w-full rounded-lg border border-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                className="mt-1 block w-full rounded-xl border border-border/50 bg-muted/50 px-3 py-2 text-sm placeholder:text-muted-foreground focus:border-border focus:outline-none focus:ring-2 focus:ring-ring transition-all duration-200"
                 placeholder="e.g. React Fundamentals"
               />
             </div>
@@ -70,7 +73,7 @@ export function CreateStudyListModal({
                 id="description"
                 name="description"
                 rows={3}
-                className="mt-1 block w-full rounded-lg border border-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none"
+                className="mt-1 block w-full resize-none rounded-xl border border-border/50 bg-muted/50 px-3 py-2 text-sm placeholder:text-muted-foreground focus:border-border focus:outline-none focus:ring-2 focus:ring-ring transition-all duration-200"
                 placeholder="What is this study list about?"
               />
             </div>

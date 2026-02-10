@@ -21,28 +21,28 @@ export function StudyListCard({ list, onEdit, onDelete }: StudyListCardProps) {
     <>
       <Card
         className={cn(
-          "transition-shadow hover:shadow-md",
-          list.pending && "opacity-70 pointer-events-none",
+          "transition-all duration-200 hover:shadow-md hover:shadow-primary/5",
+          list.pending && "pointer-events-none opacity-70",
         )}
       >
         <div className="flex items-start justify-between">
           <Link
             href={`/dashboard/${list.slug}`}
-            className="flex items-center gap-2 cursor-pointer"
+            className="flex cursor-pointer items-center gap-2"
           >
             <BookOpen className="h-5 w-5 text-primary" />
             <h3 className="font-semibold">{list.title}</h3>
           </Link>
           <button
             onClick={() => setEditOpen(true)}
-            className="cursor-pointer rounded-lg p-1 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+            className="cursor-pointer rounded-lg p-1 text-muted-foreground transition-colors duration-200 hover:bg-muted hover:text-foreground"
           >
             <Pencil className="h-4 w-4" />
           </button>
         </div>
 
         {list.description && (
-          <p className="mt-2 text-sm text-muted-foreground line-clamp-2">
+          <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">
             {list.description}
           </p>
         )}
