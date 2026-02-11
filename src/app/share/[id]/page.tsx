@@ -1,7 +1,8 @@
 import { prisma } from "@/lib/prisma/client";
 import { Container } from "@/components/ui";
 import { notFound } from "next/navigation";
-import { ExternalLink, Lock } from "lucide-react";
+import { Lock } from "lucide-react";
+import { UrlIcon } from "@/components/ui/url-icon";
 
 export default async function SharedStudyListPage({
   params,
@@ -75,11 +76,27 @@ export default async function SharedStudyListPage({
             </div>
 
             <div className="min-w-0 flex-1">
-              <p
-                className={`text-sm font-medium ${item.completed ? "text-muted-foreground line-through" : ""}`}
-              >
-                {item.title}
-              </p>
+              {item.url ? (
+                <a
+                  href={item.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 text-foreground transition-colors duration-200 hover:text-primary"
+                >
+                  <UrlIcon url={item.url} />
+                  <p
+                    className={`text-sm font-medium ${item.completed ? "text-muted-foreground line-through" : ""}`}
+                  >
+                    {item.title}
+                  </p>
+                </a>
+              ) : (
+                <p
+                  className={`text-sm font-medium ${item.completed ? "text-muted-foreground line-through" : ""}`}
+                >
+                  {item.title}
+                </p>
+              )}
               {item.notes && (
                 <p className="mt-0.5 truncate text-xs text-muted-foreground">
                   {item.notes}
@@ -87,16 +104,6 @@ export default async function SharedStudyListPage({
               )}
             </div>
 
-            {item.url && (
-              <a
-                href={item.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="rounded-lg p-1.5 text-muted-foreground transition-colors duration-200 hover:bg-muted hover:text-foreground"
-              >
-                <ExternalLink className="h-4 w-4" />
-              </a>
-            )}
           </div>
         ))}
       </div>

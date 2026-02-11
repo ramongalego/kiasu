@@ -1,10 +1,11 @@
 "use client";
 
 import { EditItemModal } from "./edit-item-modal";
-import { ExternalLink, Pencil, Trash2 } from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
 import { useState } from "react";
 import type { OptimisticStudyItem } from "@/types";
 import { cn } from "@/lib/utils";
+import { UrlIcon } from "@/components/ui/url-icon";
 
 interface StudyItemRowProps {
   item: OptimisticStudyItem;
@@ -52,11 +53,28 @@ export function StudyItemRow({
         </button>
 
         <div className="min-w-0 flex-1">
-          <p
-            className={`text-sm font-medium ${item.completed ? "text-muted-foreground line-through" : ""}`}
-          >
-            {item.title}
-          </p>
+          {item.url ? (
+            <a
+              href={item.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 text-foreground transition-colors duration-200 hover:text-primary"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <UrlIcon url={item.url} />
+              <p
+                className={`text-sm font-medium ${item.completed ? "text-muted-foreground line-through" : ""}`}
+              >
+                {item.title}
+              </p>
+            </a>
+          ) : (
+            <p
+              className={`text-sm font-medium ${item.completed ? "text-muted-foreground line-through" : ""}`}
+            >
+              {item.title}
+            </p>
+          )}
           {item.notes && (
             <p className="mt-0.5 truncate text-xs text-muted-foreground">
               {item.notes}
@@ -65,17 +83,6 @@ export function StudyItemRow({
         </div>
 
         <div className="flex items-center gap-1">
-          {item.url && (
-            <a
-              href={item.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="cursor-pointer rounded-lg p-1.5 text-muted-foreground transition-colors duration-200 hover:bg-muted hover:text-foreground"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <ExternalLink className="h-4 w-4" />
-            </a>
-          )}
           <button
             onClick={() => setEditOpen(true)}
             className="cursor-pointer rounded-lg p-1.5 text-muted-foreground transition-colors duration-200 hover:bg-muted hover:text-foreground"
