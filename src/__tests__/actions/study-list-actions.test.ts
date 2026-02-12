@@ -12,6 +12,7 @@ import {
   createStudyList,
   updateStudyList,
   deleteStudyList,
+  reorderStudyLists,
 } from "@/app/(app)/dashboard/actions";
 
 beforeEach(() => {
@@ -323,6 +324,56 @@ describe("deleteStudyList", () => {
     expect(result).toEqual({ success: true });
     expect(mockPrisma.studyList.delete).toHaveBeenCalledWith({
       where: { id: "list-1" },
+    });
+    expect(mockRevalidatePath).toHaveBeenCalledWith("/dashboard");
+  });
+});
+
+// ── reorderStudyLists ───────────────────────────────────────
+describe("reorderStudyLists", () => {
+  it("returns error when unauthenticated", async () => {
+    mockUnauthenticated();
+    const result = await reorderStudyLists(["list-1", "list-2"]);
+    expect(result).toEqual({ error: "Not authenticated" });
+  });
+
+  it("returns error when an ID does not belong to the user", async () => {
+    mockAuthenticated();
+    mockPrisma.studyList.findMany.mockResolvedValue([{ id: "list-1" }]);
+
+    const result = await reorderStudyLists(["list-1", "foreign-id"]);
+    expect(result).toEqual({ error: "Invalid list ID" });
+    expect(mockPrisma.$transaction).not.toHaveBeenCalled();
+  });
+
+  it("updates positions in order and revalidates", async () => {
+    mockAuthenticated();
+    mockPrisma.studyList.findMany.mockResolvedValue([
+      { id: "list-1" },
+      { id: "list-2" },
+      { id: "list-3" },
+    ]);
+    mockPrisma.studyList.update.mockResolvedValue({});
+
+    const result = await reorderStudyLists(["list-3", "list-1", "list-2"]);
+
+    expect(result).toEqual({ success: true });
+    expect(mockPrisma.$transaction).toHaveBeenCalledWith([
+      expect.anything(),
+      expect.anything(),
+      expect.anything(),
+    ]);
+    expect(mockPrisma.studyList.update).toHaveBeenCalledWith({
+      where: { id: "list-3" },
+      data: { position: 0 },
+    });
+    expect(mockPrisma.studyList.update).toHaveBeenCalledWith({
+      where: { id: "list-1" },
+      data: { position: 1 },
+    });
+    expect(mockPrisma.studyList.update).toHaveBeenCalledWith({
+      where: { id: "list-2" },
+      data: { position: 2 },
     });
     expect(mockRevalidatePath).toHaveBeenCalledWith("/dashboard");
   });
