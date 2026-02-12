@@ -163,3 +163,50 @@ export async function updateStudyItem(
   revalidatePath(`/dashboard/${slug}`);
   return { success: true };
 }
+
+export async function reorderStudyItems(
+  studyListId: string,
+  slug: string,
+  orderedIds: string[],
+) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { error: "Not authenticated" };
+  }
+
+  // Verify the study list belongs to the user
+  const list = await prisma.studyList.findFirst({
+    where: { id: studyListId, userId: user.id },
+  });
+
+  if (!list) {
+    return { error: "Study list not found" };
+  }
+
+  // Verify all item IDs belong to this study list
+  const items = await prisma.studyItem.findMany({
+    where: { studyListId },
+    select: { id: true },
+  });
+
+  const listItemIds = new Set(items.map((i) => i.id));
+  if (orderedIds.some((id) => !listItemIds.has(id))) {
+    return { error: "Invalid item ID" };
+  }
+
+  await prisma.$transaction(
+    orderedIds.map((id, index) =>
+      prisma.studyItem.update({
+        where: { id },
+        data: { position: index },
+      }),
+    ),
+  );
+
+  revalidatePath(`/dashboard/${slug}`);
+  return { success: true };
+}

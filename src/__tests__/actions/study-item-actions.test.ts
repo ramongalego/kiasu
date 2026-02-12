@@ -14,6 +14,7 @@ import {
   toggleStudyItem,
   deleteStudyItem,
   updateStudyItem,
+  reorderStudyItems,
 } from "@/app/(app)/dashboard/[slug]/actions";
 
 beforeEach(() => {
@@ -309,6 +310,80 @@ describe("updateStudyItem", () => {
         notes: "Updated notes",
         url: "https://new.com",
       },
+    });
+    expect(mockRevalidatePath).toHaveBeenCalledWith("/dashboard/my-slug");
+  });
+});
+
+// ── reorderStudyItems ───────────────────────────────────────
+describe("reorderStudyItems", () => {
+  it("returns error when unauthenticated", async () => {
+    mockUnauthenticated();
+    const result = await reorderStudyItems("list-1", "my-slug", [
+      "item-1",
+      "item-2",
+    ]);
+    expect(result).toEqual({ error: "Not authenticated" });
+  });
+
+  it("returns error when study list not owned by user", async () => {
+    mockAuthenticated();
+    mockPrisma.studyList.findFirst.mockResolvedValue(null);
+
+    const result = await reorderStudyItems("list-1", "my-slug", [
+      "item-1",
+      "item-2",
+    ]);
+    expect(result).toEqual({ error: "Study list not found" });
+    expect(mockPrisma.$transaction).not.toHaveBeenCalled();
+  });
+
+  it("returns error when an item ID does not belong to the list", async () => {
+    mockAuthenticated();
+    mockPrisma.studyList.findFirst.mockResolvedValue(TEST_STUDY_LIST);
+    mockPrisma.studyItem.findMany.mockResolvedValue([{ id: "item-1" }]);
+
+    const result = await reorderStudyItems("list-1", "my-slug", [
+      "item-1",
+      "foreign-id",
+    ]);
+    expect(result).toEqual({ error: "Invalid item ID" });
+    expect(mockPrisma.$transaction).not.toHaveBeenCalled();
+  });
+
+  it("updates positions in order and revalidates", async () => {
+    mockAuthenticated();
+    mockPrisma.studyList.findFirst.mockResolvedValue(TEST_STUDY_LIST);
+    mockPrisma.studyItem.findMany.mockResolvedValue([
+      { id: "item-1" },
+      { id: "item-2" },
+      { id: "item-3" },
+    ]);
+    mockPrisma.studyItem.update.mockResolvedValue({});
+
+    const result = await reorderStudyItems("list-1", "my-slug", [
+      "item-3",
+      "item-1",
+      "item-2",
+    ]);
+
+    expect(result).toEqual({ success: true });
+    expect(mockPrisma.$transaction).toHaveBeenCalledWith([
+      expect.anything(),
+      expect.anything(),
+      expect.anything(),
+    ]);
+    expect(mockPrisma.studyItem.update).toHaveBeenCalledWith({
+      where: { id: "item-3" },
+      data: { position: 0 },
+    });
+    expect(mockPrisma.studyItem.update).toHaveBeenCalledWith({
+      where: { id: "item-1" },
+      data: { position: 1 },
+    });
+    expect(mockPrisma.studyItem.update).toHaveBeenCalledWith({
+      where: { id: "item-2" },
+      data: { position: 2 },
     });
     expect(mockRevalidatePath).toHaveBeenCalledWith("/dashboard/my-slug");
   });

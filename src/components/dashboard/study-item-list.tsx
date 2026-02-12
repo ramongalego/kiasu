@@ -3,10 +3,26 @@
 import { useOptimistic, useTransition, useState } from "react";
 import { toast } from "sonner";
 import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  KeyboardSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+  sortableKeyboardCoordinates,
+  arrayMove,
+} from "@dnd-kit/sortable";
+import {
   createStudyItem,
   toggleStudyItem,
   deleteStudyItem,
   updateStudyItem,
+  reorderStudyItems,
 } from "@/app/(app)/dashboard/[slug]/actions";
 import { ProgressBar } from "@/components/ui";
 import { StudyListHeader } from "./study-list-header";
@@ -41,6 +57,12 @@ function itemReducer(
       return state.map((i) =>
         i.id === action.itemId ? { ...i, ...action.data } : i,
       );
+    case "reorder": {
+      const byId = new Map(state.map((i) => [i.id, i]));
+      return action.orderedIds
+        .map((id) => byId.get(id))
+        .filter(Boolean) as OptimisticStudyItem[];
+    }
   }
 }
 
@@ -55,6 +77,37 @@ export function StudyItemList({
   const [, startTransition] = useTransition();
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [optimisticItems, dispatch] = useOptimistic(items, itemReducer);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: { distance: 8 },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
+  );
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    const oldIndex = optimisticItems.findIndex((i) => i.id === active.id);
+    const newIndex = optimisticItems.findIndex((i) => i.id === over.id);
+    if (oldIndex === -1 || newIndex === -1) return;
+
+    const reordered = arrayMove(optimisticItems, oldIndex, newIndex);
+    const orderedIds = reordered.map((i) => i.id);
+
+    startTransition(async () => {
+      dispatch({ type: "reorder", orderedIds });
+      try {
+        const result = await reorderStudyItems(studyListId, slug, orderedIds);
+        if (result.error) toast.error(result.error);
+      } catch {
+        toast.error("Something went wrong. Please try again.");
+      }
+    });
+  };
 
   const handleToggle = (itemId: string) => {
     startTransition(async () => {
@@ -155,17 +208,29 @@ export function StudyItemList({
         {optimisticItems.length === 0 ? (
           <ItemsEmptyState onCreateClick={() => setCreateModalOpen(true)} />
         ) : (
-          <div className="space-y-2">
-            {optimisticItems.map((item) => (
-              <StudyItemRow
-                key={item.id}
-                item={item}
-                onToggle={() => handleToggle(item.id)}
-                onDelete={() => handleDelete(item.id)}
-                onEdit={(fd) => handleEdit(item.id, fd)}
-              />
-            ))}
-          </div>
+          <DndContext
+            id="study-item-dnd"
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext
+              items={optimisticItems.map((i) => i.id)}
+              strategy={verticalListSortingStrategy}
+            >
+              <div className="space-y-2">
+                {optimisticItems.map((item) => (
+                  <StudyItemRow
+                    key={item.id}
+                    item={item}
+                    onToggle={() => handleToggle(item.id)}
+                    onDelete={() => handleDelete(item.id)}
+                    onEdit={(fd) => handleEdit(item.id, fd)}
+                  />
+                ))}
+              </div>
+            </SortableContext>
+          </DndContext>
         )}
       </div>
 

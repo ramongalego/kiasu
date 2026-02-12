@@ -1,8 +1,10 @@
 'use client';
 
 import { EditItemModal } from './edit-item-modal';
-import { ChevronDown, ChevronUp, Pencil, Trash2 } from 'lucide-react';
+import { ChevronDown, ChevronUp, GripVertical, Pencil, Trash2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
+import { useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import type { OptimisticStudyItem } from '@/types';
 import { cn } from '@/lib/utils';
 import { UrlIcon } from '@/components/ui/url-icon';
@@ -26,6 +28,19 @@ export function StudyItemRow({
   const [expanded, setExpanded] = useState(false);
   const [isOverflowing, setIsOverflowing] = useState(false);
   const notesRef = useRef<HTMLParagraphElement>(null);
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: item.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
 
   useEffect(() => {
     const el = notesRef.current;
@@ -37,14 +52,17 @@ export function StudyItemRow({
   return (
     <>
       <div
+        ref={setNodeRef}
+        style={style}
         className={cn(
-          'flex items-start gap-3 rounded-xl border border-border/50 p-4 transition-all duration-200 hover:border-border hover:bg-muted/50',
+          'flex items-center gap-3 rounded-xl border border-border/50 p-4 transition-all duration-200 hover:border-border hover:bg-muted/50',
           item.pending && 'pointer-events-none opacity-70',
+          isDragging && 'z-50 opacity-80',
         )}
       >
         <button
           onClick={onToggle}
-          className='mt-0.5 flex h-5 w-5 shrink-0 cursor-pointer items-center justify-center rounded border border-border transition-all duration-200 data-[checked=true]:border-primary data-[checked=true]:bg-primary'
+          className='flex h-5 w-5 shrink-0 cursor-pointer items-center justify-center rounded border border-border transition-all duration-200 data-[checked=true]:border-primary data-[checked=true]:bg-primary'
           data-checked={item.completed}
         >
           {item.completed ? (
@@ -125,6 +143,13 @@ export function StudyItemRow({
 
         {!readOnly && (
           <div className='flex shrink-0 items-center gap-1'>
+            <button
+              {...attributes}
+              {...listeners}
+              className='cursor-grab rounded-lg p-1.5 text-muted-foreground transition-colors duration-200 hover:bg-muted hover:text-foreground active:cursor-grabbing'
+            >
+              <GripVertical className='h-4 w-4' />
+            </button>
             <button
               onClick={() => setEditOpen(true)}
               className='cursor-pointer rounded-lg p-1.5 text-muted-foreground transition-colors duration-200 hover:bg-muted hover:text-foreground'
