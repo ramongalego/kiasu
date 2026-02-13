@@ -42,7 +42,10 @@ export function UserMenu() {
   };
 
   const name =
-    user.user_metadata?.full_name ?? user.user_metadata?.name ?? user.email;
+    user.user_metadata?.username ??
+    user.user_metadata?.full_name ??
+    user.user_metadata?.name ??
+    user.email;
   const avatarUrl = profilePicture ?? user.user_metadata?.avatar_url ?? null;
 
   return (

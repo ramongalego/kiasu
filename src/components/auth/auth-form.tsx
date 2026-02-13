@@ -151,7 +151,8 @@ export function AuthForm({ mode }: AuthFormProps) {
         setLoading(false);
         return;
       }
-      toast.success('Check your email to confirm your account');
+      router.push('/dashboard');
+      router.refresh();
       setLoading(false);
     }
   };

@@ -39,7 +39,7 @@ export const usernameSchema = z
     /^[a-zA-Z0-9_]+$/,
     'Username can only contain letters, numbers, and underscores',
   )
-  .transform((s) => s.toLowerCase());
+;
 
 export const loginSchema = z.object({
   identifier: z.string().trim().min(1, 'Email or username is required'),
