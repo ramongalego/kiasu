@@ -37,6 +37,7 @@ export interface StudyItem {
 export interface StudyListWithItemCount extends StudyList {
   _count: {
     items: number;
+    completedItems: number;
   };
 }
 

@@ -18,6 +18,7 @@ model User {
   updatedAt         DateTime @updatedAt
 
   studyLists StudyList[]
+  votes      Vote[]
 
   @@map("users")
 }
@@ -36,6 +37,7 @@ model StudyList {
 
   user  User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   items StudyItem[]
+  votes Vote[]
 
   @@unique([userId, slug])
   @@index([userId])
@@ -57,4 +59,24 @@ model StudyItem {
 
   @@index([studyListId])
   @@map("study_items")
+}
+
+enum VoteType {
+  UP
+  DOWN
+}
+
+model Vote {
+  id          String   @id @default(uuid())
+  type        VoteType
+  userId      String
+  studyListId String
+  createdAt   DateTime @default(now())
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  studyList StudyList @relation(fields: [studyListId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, studyListId])
+  @@index([studyListId])
+  @@map("votes")
 }

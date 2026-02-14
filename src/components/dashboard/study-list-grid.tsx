@@ -114,7 +114,7 @@ export function StudyListGrid({ studyLists }: StudyListGridProps) {
       userId: '',
       createdAt: new Date(),
       updatedAt: new Date(),
-      _count: { items: 0 },
+      _count: { items: 0, completedItems: 0 },
       pending: true,
     };
 

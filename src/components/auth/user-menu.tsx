@@ -3,7 +3,7 @@
 import { createClient } from '@/lib/supabase/client';
 import { useUser } from '@/hooks/use-user';
 import { Avatar } from '@/components/ui';
-import { LogOut, LayoutDashboard, UserCircle } from 'lucide-react';
+import { LogOut, UserCircle } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState, useRef, useEffect } from 'react';
@@ -77,15 +77,6 @@ export function UserMenu() {
           >
             <UserCircle className="h-4 w-4" />
             Profile
-          </Link>
-
-          <Link
-            href="/dashboard"
-            onClick={() => setOpen(false)}
-            className="flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors duration-200 hover:bg-muted"
-          >
-            <LayoutDashboard className="h-4 w-4" />
-            Dashboard
           </Link>
 
           <button

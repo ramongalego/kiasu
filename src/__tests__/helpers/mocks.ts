@@ -93,6 +93,14 @@ export const mockPrisma = {
     findUnique: vi.fn(),
     update: vi.fn(),
   },
+  vote: {
+    findUnique: vi.fn(),
+    findMany: vi.fn(),
+    create: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn(),
+    count: vi.fn(),
+  },
   $transaction: vi.fn((args: unknown) =>
     Array.isArray(args) ? Promise.all(args) : (args as () => unknown)(),
   ),

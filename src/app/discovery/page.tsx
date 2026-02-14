@@ -1,0 +1,103 @@
+import { createClient } from '@/lib/supabase/server';
+import { prisma } from '@/lib/prisma/client';
+import { Container } from '@/components/ui';
+import { DiscoveryStudyListCard } from '@/components/discovery/discovery-study-list-card';
+import { DiscoveryCategoryFilter } from '@/components/discovery/discovery-category-filter';
+import { CATEGORY_VALUES } from '@/lib/categories';
+import { Compass } from 'lucide-react';
+import type { VoteType } from '@prisma/client';
+
+export default async function DiscoveryPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ category?: string }>;
+}) {
+  const { category } = await searchParams;
+  const validCategory =
+    category &&
+    CATEGORY_VALUES.includes(category as (typeof CATEGORY_VALUES)[number])
+      ? category
+      : undefined;
+
+  const studyLists = await prisma.studyList.findMany({
+    where: {
+      isPublic: true,
+      user: { username: { not: null } },
+      ...(validCategory && { category: validCategory }),
+    },
+    select: {
+      id: true,
+      title: true,
+      description: true,
+      category: true,
+      createdAt: true,
+      user: {
+        select: { username: true, profilePictureUrl: true, avatarUrl: true },
+      },
+      _count: { select: { items: true } },
+      votes: { select: { type: true } },
+    },
+    orderBy: { createdAt: 'desc' },
+  });
+
+  // Optionally get current user's votes (non-blocking)
+  let userVotes = new Map<string, VoteType>();
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (user) {
+      const listIds = studyLists.map((l) => l.id);
+      const votes = await prisma.vote.findMany({
+        where: { userId: user.id, studyListId: { in: listIds } },
+        select: { studyListId: true, type: true },
+      });
+      userVotes = new Map(votes.map((v) => [v.studyListId, v.type]));
+    }
+  } catch {
+    // Not authenticated — userVotes stays empty
+  }
+
+  const listsWithVotes = studyLists
+    .map((list) => {
+      const upvotes = list.votes.filter((v) => v.type === 'UP').length;
+      const downvotes = list.votes.filter((v) => v.type === 'DOWN').length;
+      return {
+        ...list,
+        upvotes,
+        downvotes,
+        currentUserVote: userVotes.get(list.id) ?? null,
+      };
+    })
+    .sort((a, b) => b.upvotes - b.downvotes - (a.upvotes - a.downvotes));
+
+  return (
+    <Container as="section" className="py-8">
+      <div>
+        <h1 className="flex items-center gap-2 text-2xl font-bold">
+          <Compass className="h-7 w-7 text-primary" />
+          Discovery
+        </h1>
+        <p className="mt-2 text-muted-foreground">
+          Explore public study lists created by the community.
+        </p>
+      </div>
+
+      <DiscoveryCategoryFilter />
+
+      {listsWithVotes.length > 0 ? (
+        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {listsWithVotes.map((list) => (
+            <DiscoveryStudyListCard key={list.id} list={list} />
+          ))}
+        </div>
+      ) : (
+        <p className="mt-8 text-sm text-muted-foreground">
+          No study lists found. Try a different category!
+        </p>
+      )}
+    </Container>
+  );
+}

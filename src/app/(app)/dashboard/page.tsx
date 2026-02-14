@@ -9,11 +9,30 @@ export default async function DashboardPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const studyLists = await prisma.studyList.findMany({
-    where: { userId: user!.id },
-    include: { _count: { select: { items: true } } },
-    orderBy: { position: 'asc' },
-  });
+  const [lists, completedCounts] = await Promise.all([
+    prisma.studyList.findMany({
+      where: { userId: user!.id },
+      include: { _count: { select: { items: true } } },
+      orderBy: { position: 'asc' },
+    }),
+    prisma.studyItem.groupBy({
+      by: ['studyListId'],
+      where: { studyList: { userId: user!.id }, completed: true },
+      _count: true,
+    }),
+  ]);
+
+  const completedMap = new Map(
+    completedCounts.map((c) => [c.studyListId, c._count]),
+  );
+
+  const studyLists = lists.map((list) => ({
+    ...list,
+    _count: {
+      ...list._count,
+      completedItems: completedMap.get(list.id) ?? 0,
+    },
+  }));
 
   return (
     <Container as="section" className="py-8">
