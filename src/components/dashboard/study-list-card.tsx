@@ -55,7 +55,7 @@ export function StudyListCard({ list, onEdit, onDelete }: StudyListCardProps) {
               {createElement(getCategoryIcon(list.category), {
                 className: 'h-5 w-5 text-primary',
               })}
-              <h3 className="font-semibold">{list.title}</h3>
+              <h3 className="font-semibold leading-none">{list.title}</h3>
               {!list.isPublic && (
                 <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
                   <Lock className="h-3 w-3" />

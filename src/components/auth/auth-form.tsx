@@ -1,7 +1,7 @@
 'use client';
 
 import { createClient } from '@/lib/supabase/client';
-import { Card, Button } from '@/components/ui';
+import { Card, Button, Container, Skeleton } from '@/components/ui';
 import { SocialLoginButtons } from './social-login-buttons';
 import { loginSchema, signupSchema } from '@/lib/validations/schemas';
 import {
@@ -25,6 +25,7 @@ export function AuthForm({ mode }: AuthFormProps) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [redirecting, setRedirecting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   // Username availability state (signup only)
@@ -110,9 +111,9 @@ export function AuthForm({ mode }: AuthFormProps) {
         setLoading(false);
         return;
       }
+      setRedirecting(true);
       router.push('/dashboard');
       router.refresh();
-      setLoading(false);
     } else {
       const result = signupSchema.safeParse({ email, username, password });
       if (!result.success) {
@@ -151,14 +152,34 @@ export function AuthForm({ mode }: AuthFormProps) {
         setLoading(false);
         return;
       }
+      setRedirecting(true);
       router.push('/dashboard');
       router.refresh();
-      setLoading(false);
     }
   };
 
   const inputClass = (field: string) =>
     `mt-1 block w-full rounded-xl border ${errors[field] ? 'border-destructive' : 'border-border/50'} bg-muted/50 px-3 py-2 text-sm placeholder:text-muted-foreground focus:border-border focus:outline-none focus:ring-2 focus:ring-ring transition-all duration-200`;
+
+  if (redirecting) {
+    return (
+      <Container as="section" className="py-8">
+        <div className="flex items-center justify-between">
+          <div>
+            <Skeleton className="h-8 w-48" />
+            <Skeleton className="mt-2 h-5 w-72" />
+          </div>
+          <Skeleton className="h-10 w-28" />
+        </div>
+
+        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <Skeleton key={i} className="h-40" />
+          ))}
+        </div>
+      </Container>
+    );
+  }
 
   return (
     <div className="flex min-h-[60vh] items-center justify-center">

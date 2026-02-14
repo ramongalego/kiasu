@@ -5,6 +5,7 @@ interface AvatarProps {
   src?: string | null;
   name?: string | null;
   size?: 'sm' | 'md' | 'lg' | 'xl';
+  rounded?: 'full' | 'lg';
   className?: string;
 }
 
@@ -15,9 +16,20 @@ const sizeStyles = {
   xl: 'h-20 w-20 text-xl',
 };
 
-const imageSizes = { sm: 32, md: 40, lg: 48, xl: 80 };
+// Request 2x resolution for sharp rendering on retina displays
+const imageSizes = { sm: 64, md: 80, lg: 96, xl: 160 };
 
-export function Avatar({ src, name, size = 'md', className }: AvatarProps) {
+const roundedStyles = { full: 'rounded-full', lg: 'rounded-lg' };
+
+export function Avatar({
+  src,
+  name,
+  size = 'md',
+  rounded = 'full',
+  className,
+}: AvatarProps) {
+  const rounding = roundedStyles[rounded];
+
   if (src) {
     return (
       <Image
@@ -25,7 +37,7 @@ export function Avatar({ src, name, size = 'md', className }: AvatarProps) {
         alt={name ?? 'Avatar'}
         width={imageSizes[size]}
         height={imageSizes[size]}
-        className={cn('rounded-full object-cover', sizeStyles[size], className)}
+        className={cn('object-cover', rounding, sizeStyles[size], className)}
       />
     );
   }
@@ -33,7 +45,8 @@ export function Avatar({ src, name, size = 'md', className }: AvatarProps) {
   return (
     <div
       className={cn(
-        'flex items-center justify-center rounded-full bg-primary text-primary-foreground font-medium',
+        'flex items-center justify-center bg-primary text-primary-foreground font-medium',
+        rounding,
         sizeStyles[size],
         className,
       )}

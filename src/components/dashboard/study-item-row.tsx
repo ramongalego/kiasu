@@ -21,6 +21,7 @@ interface StudyItemRowProps {
   onDelete?: () => void;
   onEdit?: (formData: FormData) => void;
   readOnly?: boolean;
+  isOverlay?: boolean;
 }
 
 export function StudyItemRow({
@@ -29,6 +30,7 @@ export function StudyItemRow({
   onDelete,
   onEdit,
   readOnly,
+  isOverlay,
 }: StudyItemRowProps) {
   const [editOpen, setEditOpen] = useState(false);
   const [expanded, setExpanded] = useState(false);
@@ -44,7 +46,7 @@ export function StudyItemRow({
   } = useSortable({ id: item.id });
 
   const style = {
-    transform: CSS.Transform.toString(transform),
+    transform: CSS.Translate.toString(transform),
     transition,
   };
 
@@ -61,10 +63,12 @@ export function StudyItemRow({
         ref={setNodeRef}
         style={style}
         className={cn(
-          'flex items-center gap-3 rounded-xl border border-border/50 p-4 transition-all duration-200 hover:border-border hover:bg-muted/50',
+          'flex items-center gap-3 rounded-xl border border-border/50 bg-card p-4 transition-all duration-200 hover:border-border hover:bg-muted/50',
           item.completed && 'opacity-50',
           item.pending && 'pointer-events-none opacity-70',
-          isDragging && 'z-50 opacity-80',
+          isDragging && 'z-50 border-dashed border-primary/30 opacity-40',
+          isOverlay &&
+            'scale-[1.02] border-primary/30 shadow-xl shadow-primary/10',
         )}
       >
         <button

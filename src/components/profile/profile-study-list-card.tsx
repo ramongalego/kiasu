@@ -30,7 +30,7 @@ export function ProfileStudyListCard({
           {createElement(getCategoryIcon(list.category), {
             className: 'h-5 w-5 shrink-0 text-primary',
           })}
-          <h3 className="truncate font-semibold">{list.title}</h3>
+          <h3 className="truncate font-semibold leading-none">{list.title}</h3>
           {!list.isPublic && isOwner && (
             <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
               <Lock className="h-3 w-3" />

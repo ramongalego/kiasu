@@ -52,9 +52,9 @@ export function UserMenu() {
     <div className="relative" ref={menuRef}>
       <button
         onClick={() => setOpen(!open)}
-        className="cursor-pointer rounded-full transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring hover:ring-2 hover:ring-ring/50"
+        className="cursor-pointer rounded-lg transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring hover:ring-2 hover:ring-ring/50"
       >
-        <Avatar src={avatarUrl} name={name} size="sm" />
+        <Avatar src={avatarUrl} name={name} size="md" rounded="lg" />
       </button>
 
       {open && (

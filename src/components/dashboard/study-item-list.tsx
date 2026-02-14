@@ -4,11 +4,13 @@ import { useOptimistic, useTransition, useState } from 'react';
 import { toast } from 'sonner';
 import {
   DndContext,
+  DragOverlay,
   closestCenter,
   PointerSensor,
   KeyboardSensor,
   useSensor,
   useSensors,
+  type DragStartEvent,
   type DragEndEvent,
 } from '@dnd-kit/core';
 import {
@@ -76,6 +78,7 @@ export function StudyItemList({
 }: StudyItemListProps) {
   const [, startTransition] = useTransition();
   const [createModalOpen, setCreateModalOpen] = useState(false);
+  const [activeId, setActiveId] = useState<string | null>(null);
   const [optimisticItems, dispatch] = useOptimistic(items, itemReducer);
 
   const sensors = useSensors(
@@ -87,7 +90,12 @@ export function StudyItemList({
     }),
   );
 
+  const handleDragStart = (event: DragStartEvent) => {
+    setActiveId(event.active.id as string);
+  };
+
   const handleDragEnd = (event: DragEndEvent) => {
+    setActiveId(null);
     const { active, over } = event;
     if (!over || active.id === over.id) return;
 
@@ -212,6 +220,7 @@ export function StudyItemList({
             id="study-item-dnd"
             sensors={sensors}
             collisionDetection={closestCenter}
+            onDragStart={handleDragStart}
             onDragEnd={handleDragEnd}
           >
             <SortableContext
@@ -230,6 +239,16 @@ export function StudyItemList({
                 ))}
               </div>
             </SortableContext>
+            <DragOverlay dropAnimation={null}>
+              {activeId ? (
+                <StudyItemRow
+                  item={optimisticItems.find((i) => i.id === activeId)!}
+                  onToggle={() => {}}
+                  readOnly
+                  isOverlay
+                />
+              ) : null}
+            </DragOverlay>
           </DndContext>
         )}
       </div>

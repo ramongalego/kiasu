@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState, useTransition } from 'react';
+import { useRef, useState, useTransition } from 'react';
 import { Camera } from 'lucide-react';
 import { toast } from 'sonner';
 import { Avatar } from '@/components/ui';
@@ -13,20 +13,23 @@ interface ProfileAvatarProps {
 
 export function ProfileAvatar({ src, name }: ProfileAvatarProps) {
   const inputRef = useRef<HTMLInputElement>(null);
-  const [preview, setPreview] = useState<string | null>(null);
+  // Store preview alongside the src it was created for, so it auto-clears
+  // when the server-provided src updates after revalidation.
+  const [previewState, setPreviewState] = useState<{
+    url: string;
+    forSrc: string | null;
+  } | null>(null);
   const [isPending, startTransition] = useTransition();
 
-  // Clear the local preview once the server `src` prop updates after revalidation
-  useEffect(() => {
-    setPreview(null);
-  }, [src]);
+  const preview =
+    previewState && previewState.forSrc === src ? previewState.url : null;
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
 
     const objectUrl = URL.createObjectURL(file);
-    setPreview(objectUrl);
+    setPreviewState({ url: objectUrl, forSrc: src });
 
     const formData = new FormData();
     formData.append('file', file);
@@ -35,7 +38,7 @@ export function ProfileAvatar({ src, name }: ProfileAvatarProps) {
       const result = await uploadProfilePicture(formData);
 
       if (result.error) {
-        setPreview(null);
+        setPreviewState(null);
         URL.revokeObjectURL(objectUrl);
         toast.error(result.error);
       } else {
