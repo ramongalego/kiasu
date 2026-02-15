@@ -36,7 +36,7 @@ export default async function DiscoveryPage({
       user: {
         select: { username: true, profilePictureUrl: true, avatarUrl: true },
       },
-      _count: { select: { items: true } },
+      _count: { select: { items: true, copies: true } },
       votes: { select: { type: true } },
     },
     orderBy: { createdAt: 'desc' },
@@ -66,10 +66,19 @@ export default async function DiscoveryPage({
     // Not authenticated — userVotes stays empty
   }
 
+  const MS_PER_DAY = 86_400_000;
+  const FRESHNESS_WINDOW_DAYS = 14;
+
   const listsWithVotes = studyLists
     .map((list) => {
       const upvotes = list.votes.filter((v) => v.type === 'UP').length;
       const downvotes = list.votes.filter((v) => v.type === 'DOWN').length;
+      const netVotes = upvotes - downvotes;
+      const copyCount = list._count.copies;
+      const daysOld =
+        (new Date().getTime() - list.createdAt.getTime()) / MS_PER_DAY;
+      const freshnessBonus = Math.max(0, FRESHNESS_WINDOW_DAYS - daysOld);
+      const score = netVotes * 3 + copyCount * 5 + freshnessBonus;
       const isOwner = currentUserId !== null && list.userId === currentUserId;
       return {
         ...list,
@@ -77,9 +86,10 @@ export default async function DiscoveryPage({
         downvotes,
         currentUserVote: userVotes.get(list.id) ?? null,
         href: isOwner ? `/dashboard/${list.slug}` : `/share/${list.id}`,
+        score,
       };
     })
-    .sort((a, b) => b.upvotes - b.downvotes - (a.upvotes - a.downvotes));
+    .sort((a, b) => b.score - a.score);
 
   return (
     <Container as="section" className="py-8">

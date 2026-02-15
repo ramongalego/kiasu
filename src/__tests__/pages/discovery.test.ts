@@ -83,7 +83,7 @@ describe('DiscoveryPage', () => {
               avatarUrl: true,
             },
           },
-          _count: { select: { items: true } },
+          _count: { select: { items: true, copies: true } },
           votes: { select: { type: true } },
         }),
       }),
