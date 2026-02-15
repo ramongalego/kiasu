@@ -4,7 +4,7 @@ import { createElement } from 'react';
 import { Card } from '@/components/ui';
 import { EditStudyListModal } from './edit-study-list-modal';
 import { getCategoryIcon, CATEGORIES } from '@/lib/categories';
-import { BookOpen, GripVertical, Lock, Pencil } from 'lucide-react';
+import { BookOpen, GripVertical, Link2, Lock, Pencil } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
@@ -64,6 +64,17 @@ export function StudyListCard({ list, onEdit, onDelete }: StudyListCardProps) {
                 <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
                   <Lock className="h-3 w-3" />
                   Private
+                </span>
+              )}
+              {list.copiedFrom?.user?.username && (
+                <span
+                  className="group/tooltip relative inline-flex items-center text-muted-foreground"
+                  title={`Copied from ${list.copiedFrom.user.username}`}
+                >
+                  <Link2 className="h-3.5 w-3.5" />
+                  <span className="pointer-events-none absolute bottom-full left-1/2 mb-1.5 -translate-x-1/2 whitespace-nowrap rounded bg-foreground px-2 py-1 text-[11px] text-background opacity-0 transition-opacity group-hover/tooltip:opacity-100">
+                    Copied from {list.copiedFrom.user.username}
+                  </span>
                 </span>
               )}
             </div>

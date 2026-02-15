@@ -4,12 +4,16 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { StudyItem } from '@/types';
 import { StudyItemRow } from '@/components/dashboard/study-item-row';
 import { ProgressBar } from '@/components/ui/progress-bar';
+import { CopyStudyListButton } from '@/components/discovery/copy-study-list-button';
 
 interface SharedStudyItemListProps {
   listId: string;
   title: string;
   description: string | null;
   items: StudyItem[];
+  isAuthenticated?: boolean;
+  isOwner?: boolean;
+  studyListId?: string;
 }
 
 const storageKey = (listId: string) => `kiasu-shared-progress-${listId}`;
@@ -32,6 +36,9 @@ export function SharedStudyItemList({
   title,
   description,
   items,
+  isAuthenticated = false,
+  isOwner = false,
+  studyListId,
 }: SharedStudyItemListProps) {
   const [checkedIds, setCheckedIds] = useState<Set<string>>(new Set());
 
@@ -65,10 +72,15 @@ export function SharedStudyItemList({
 
   return (
     <>
-      <div>
-        <h1 className="text-2xl font-bold">{title}</h1>
-        {description && (
-          <p className="mt-1 text-muted-foreground">{description}</p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold">{title}</h1>
+          {description && (
+            <p className="mt-1 text-muted-foreground">{description}</p>
+          )}
+        </div>
+        {isAuthenticated && !isOwner && studyListId && (
+          <CopyStudyListButton studyListId={studyListId} variant="button" />
         )}
       </div>
 

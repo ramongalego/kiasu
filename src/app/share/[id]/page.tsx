@@ -1,3 +1,4 @@
+import { createClient } from '@/lib/supabase/server';
 import { prisma } from '@/lib/prisma/client';
 import { Container } from '@/components/ui';
 import { notFound } from 'next/navigation';
@@ -20,6 +21,21 @@ export default async function SharedStudyListPage({
 
   if (!studyList) {
     notFound();
+  }
+
+  let isAuthenticated = false;
+  let isOwner = false;
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (user) {
+      isAuthenticated = true;
+      isOwner = studyList.userId === user.id;
+    }
+  } catch {
+    // Not authenticated
   }
 
   if (!studyList.isPublic) {
@@ -51,6 +67,9 @@ export default async function SharedStudyListPage({
         title={studyList.title}
         description={studyList.description}
         items={items}
+        isAuthenticated={isAuthenticated}
+        isOwner={isOwner}
+        studyListId={studyList.id}
       />
     </Container>
   );

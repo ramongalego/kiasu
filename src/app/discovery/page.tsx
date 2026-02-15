@@ -28,9 +28,11 @@ export default async function DiscoveryPage({
     select: {
       id: true,
       title: true,
+      slug: true,
       description: true,
       category: true,
       createdAt: true,
+      userId: true,
       user: {
         select: { username: true, profilePictureUrl: true, avatarUrl: true },
       },
@@ -42,6 +44,8 @@ export default async function DiscoveryPage({
 
   // Optionally get current user's votes (non-blocking)
   let userVotes = new Map<string, VoteType>();
+  let isAuthenticated = false;
+  let currentUserId: string | null = null;
   try {
     const supabase = await createClient();
     const {
@@ -49,6 +53,8 @@ export default async function DiscoveryPage({
     } = await supabase.auth.getUser();
 
     if (user) {
+      isAuthenticated = true;
+      currentUserId = user.id;
       const listIds = studyLists.map((l) => l.id);
       const votes = await prisma.vote.findMany({
         where: { userId: user.id, studyListId: { in: listIds } },
@@ -64,11 +70,13 @@ export default async function DiscoveryPage({
     .map((list) => {
       const upvotes = list.votes.filter((v) => v.type === 'UP').length;
       const downvotes = list.votes.filter((v) => v.type === 'DOWN').length;
+      const isOwner = currentUserId !== null && list.userId === currentUserId;
       return {
         ...list,
         upvotes,
         downvotes,
         currentUserVote: userVotes.get(list.id) ?? null,
+        href: isOwner ? `/dashboard/${list.slug}` : `/share/${list.id}`,
       };
     })
     .sort((a, b) => b.upvotes - b.downvotes - (a.upvotes - a.downvotes));
@@ -90,7 +98,12 @@ export default async function DiscoveryPage({
       {listsWithVotes.length > 0 ? (
         <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {listsWithVotes.map((list) => (
-            <DiscoveryStudyListCard key={list.id} list={list} />
+            <DiscoveryStudyListCard
+              key={list.id}
+              list={list}
+              isAuthenticated={isAuthenticated}
+              isOwner={currentUserId !== null && list.userId === currentUserId}
+            />
           ))}
         </div>
       ) : (

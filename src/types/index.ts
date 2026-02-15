@@ -39,6 +39,11 @@ export interface StudyListWithItemCount extends StudyList {
     items: number;
     completedItems: number;
   };
+  copiedFrom?: {
+    user: {
+      username: string | null;
+    };
+  } | null;
 }
 
 export type OptimisticStudyItem = StudyItem & { pending?: boolean };

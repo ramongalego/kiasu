@@ -35,6 +35,10 @@ model StudyList {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
+  copiedFromId String?
+  copiedFrom   StudyList?  @relation("CopiedFrom", fields: [copiedFromId], references: [id], onDelete: SetNull)
+  copies       StudyList[] @relation("CopiedFrom")
+
   user  User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   items StudyItem[]
   votes Vote[]

@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { Card, Avatar } from '@/components/ui';
 import { getCategoryIcon, CATEGORIES } from '@/lib/categories';
 import { VoteButtons } from '@/components/discovery/vote-buttons';
+import { CopyStudyListButton } from '@/components/discovery/copy-study-list-button';
 import { BookOpen } from 'lucide-react';
 
 interface DiscoveryStudyListCardProps {
@@ -15,25 +16,32 @@ interface DiscoveryStudyListCardProps {
     upvotes: number;
     downvotes: number;
     currentUserVote: 'UP' | 'DOWN' | null;
+    href: string;
     user: {
       username: string | null;
       profilePictureUrl: string | null;
       avatarUrl: string | null;
     };
   };
+  isAuthenticated: boolean;
+  isOwner: boolean;
 }
 
 function getCategoryLabel(category: string): string {
   return CATEGORIES.find((c) => c.value === category)?.label ?? 'Other';
 }
 
-export function DiscoveryStudyListCard({ list }: DiscoveryStudyListCardProps) {
+export function DiscoveryStudyListCard({
+  list,
+  isAuthenticated,
+  isOwner,
+}: DiscoveryStudyListCardProps) {
   const avatarSrc = list.user.profilePictureUrl ?? list.user.avatarUrl ?? null;
   const username = list.user.username ?? 'Anonymous';
 
   return (
     <Card className="group relative flex h-full flex-col gap-4 p-0 transition-all duration-200 hover:shadow-md hover:shadow-primary/5">
-      <Link href={`/share/${list.id}`} className="absolute inset-0 z-0" />
+      <Link href={list.href} className="absolute inset-0 z-0" />
 
       {/* Header: category badge + item count */}
       <div className="flex items-center justify-between px-5 pt-4">
@@ -92,12 +100,18 @@ export function DiscoveryStudyListCard({ list }: DiscoveryStudyListCardProps) {
           </div>
         )}
 
-        <VoteButtons
-          studyListId={list.id}
-          upvotes={list.upvotes}
-          downvotes={list.downvotes}
-          currentUserVote={list.currentUserVote}
-        />
+        <div className="flex items-center gap-1.5">
+          {isAuthenticated && !isOwner && (
+            <CopyStudyListButton studyListId={list.id} />
+          )}
+          <VoteButtons
+            studyListId={list.id}
+            upvotes={list.upvotes}
+            downvotes={list.downvotes}
+            currentUserVote={list.currentUserVote}
+            isAuthenticated={isAuthenticated}
+          />
+        </div>
       </div>
     </Card>
   );

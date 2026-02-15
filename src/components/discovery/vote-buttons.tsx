@@ -13,6 +13,7 @@ interface VoteButtonsProps {
   upvotes: number;
   downvotes: number;
   currentUserVote: VoteType | null;
+  isAuthenticated: boolean;
 }
 
 interface VoteState {
@@ -26,6 +27,7 @@ export function VoteButtons({
   upvotes,
   downvotes,
   currentUserVote,
+  isAuthenticated,
 }: VoteButtonsProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -64,7 +66,7 @@ export function VoteButtons({
   const score = optimistic.upvotes - optimistic.downvotes;
 
   function handleVote(type: VoteType) {
-    if (currentUserVote === undefined) {
+    if (!isAuthenticated) {
       router.push('/login');
       return;
     }

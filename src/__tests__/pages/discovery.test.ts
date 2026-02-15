@@ -72,8 +72,10 @@ describe('DiscoveryPage', () => {
         select: expect.objectContaining({
           id: true,
           title: true,
+          slug: true,
           description: true,
           category: true,
+          userId: true,
           user: {
             select: {
               username: true,

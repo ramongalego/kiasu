@@ -12,7 +12,10 @@ export default async function DashboardPage() {
   const [lists, completedCounts] = await Promise.all([
     prisma.studyList.findMany({
       where: { userId: user!.id },
-      include: { _count: { select: { items: true } } },
+      include: {
+        _count: { select: { items: true } },
+        copiedFrom: { select: { user: { select: { username: true } } } },
+      },
       orderBy: { position: 'asc' },
     }),
     prisma.studyItem.groupBy({
