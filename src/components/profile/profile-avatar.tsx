@@ -46,6 +46,11 @@ export function ProfileAvatar({ src, name }: ProfileAvatarProps) {
         // server-provided `src` prop catches up via revalidation.
         // Clearing it now would briefly flash the old image.
         URL.revokeObjectURL(objectUrl);
+        window.dispatchEvent(
+          new CustomEvent('profile-picture-updated', {
+            detail: result.url,
+          }),
+        );
       }
     });
 

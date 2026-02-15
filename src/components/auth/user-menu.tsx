@@ -23,6 +23,18 @@ export function UserMenu() {
   }, [user]);
 
   useEffect(() => {
+    const handlePictureUpdate = (e: Event) => {
+      setProfilePicture((e as CustomEvent<string>).detail);
+    };
+    window.addEventListener('profile-picture-updated', handlePictureUpdate);
+    return () =>
+      window.removeEventListener(
+        'profile-picture-updated',
+        handlePictureUpdate,
+      );
+  }, []);
+
+  useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
         setOpen(false);
