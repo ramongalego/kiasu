@@ -37,28 +37,30 @@ export function StudyListHeader({
         Back to lists
       </Link>
 
-      <div className="mt-4 flex items-center justify-between">
-        <div>
+      <div className="mt-4 flex items-start justify-between gap-4">
+        <div className="min-w-0">
           <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold">{title}</h1>
+            <h1 className="truncate text-2xl font-bold">{title}</h1>
             <button
               onClick={onEditClick}
-              className="cursor-pointer rounded-lg p-1.5 text-muted-foreground transition-colors duration-200 hover:bg-muted hover:text-foreground"
+              className="shrink-0 cursor-pointer rounded-lg p-1.5 text-muted-foreground transition-colors duration-200 hover:bg-muted hover:text-foreground"
             >
               <Pencil className="h-4 w-4" />
             </button>
             {!isPublic && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
+              <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
                 <Lock className="h-3 w-3" />
                 Private
               </span>
             )}
           </div>
           {description && (
-            <p className="mt-1 text-muted-foreground">{description}</p>
+            <p className="mt-1 line-clamp-4 text-muted-foreground">
+              {description}
+            </p>
           )}
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex shrink-0 items-center gap-2">
           <Button variant="outline" onClick={handleShare}>
             <Share2 className="mr-2 h-4 w-4" />
             Share
