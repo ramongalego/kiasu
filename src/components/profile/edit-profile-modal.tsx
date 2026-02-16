@@ -12,7 +12,13 @@ import {
   changePassword,
 } from '@/app/(app)/profile/actions';
 import { X, User, Mail, Lock, Check, CircleAlert } from 'lucide-react';
-import { useEffect, useState, useTransition, type FormEvent } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useState,
+  useTransition,
+  type FormEvent,
+} from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 
@@ -54,6 +60,12 @@ export function EditProfileModal({
   const { status: usernameStatus, error: usernameError } =
     useUsernameAvailability(checkUsername);
 
+  const handleClose = useCallback(() => {
+    setProfileErrors({});
+    setPasswordErrors({});
+    onClose();
+  }, [onClose]);
+
   useEffect(() => {
     if (!open) return;
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -61,7 +73,7 @@ export function EditProfileModal({
     };
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [open]);
+  }, [open, handleClose]);
 
   if (!open) return null;
 
@@ -153,12 +165,6 @@ export function EditProfileModal({
       setNewPw('');
       onClose();
     });
-  };
-
-  const handleClose = () => {
-    setProfileErrors({});
-    setPasswordErrors({});
-    onClose();
   };
 
   const inputClass = (hasError: boolean) =>

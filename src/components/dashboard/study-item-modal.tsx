@@ -3,7 +3,13 @@
 import { Button, Spinner } from '@/components/ui';
 import { studyItemSchema } from '@/lib/validations/schemas';
 import { X, Youtube } from 'lucide-react';
-import { useEffect, useRef, useState, type FormEvent } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type FormEvent,
+} from 'react';
 import type { StudyItem } from '@/types';
 
 const YOUTUBE_RE =
@@ -31,6 +37,18 @@ export function StudyItemModal({
   const [ytLoading, setYtLoading] = useState(false);
   const isEdit = !!item;
 
+  const handleClose = useCallback(() => {
+    abortRef.current?.abort();
+    setErrors({});
+    setYtTitle(null);
+    setYtLoading(false);
+    if (!isEdit) {
+      setUrl('');
+      setTitle('');
+    }
+    onClose();
+  }, [onClose, isEdit]);
+
   useEffect(() => {
     if (!open) return;
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -38,7 +56,7 @@ export function StudyItemModal({
     };
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [open]);
+  }, [open, handleClose]);
 
   if (!open) return null;
 
@@ -103,18 +121,6 @@ export function StudyItemModal({
       setUrl('');
       setTitle('');
       setYtTitle(null);
-    }
-    onClose();
-  };
-
-  const handleClose = () => {
-    abortRef.current?.abort();
-    setErrors({});
-    setYtTitle(null);
-    setYtLoading(false);
-    if (!isEdit) {
-      setUrl('');
-      setTitle('');
     }
     onClose();
   };

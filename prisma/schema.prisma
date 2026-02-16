@@ -46,6 +46,8 @@ model StudyList {
 
   @@unique([userId, slug])
   @@index([userId])
+  @@index([isPublic])
+  @@index([copiedFromId])
   @@map("study_lists")
 }
 
@@ -83,5 +85,6 @@ model Vote {
 
   @@unique([userId, studyListId])
   @@index([studyListId])
+  @@index([userId])
   @@map("votes")
 }

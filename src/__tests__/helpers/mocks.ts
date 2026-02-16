@@ -106,6 +106,7 @@ export const mockPrisma = {
     update: vi.fn(),
     delete: vi.fn(),
     count: vi.fn(),
+    groupBy: vi.fn(),
   },
   $transaction: vi.fn((args: unknown) =>
     Array.isArray(args) ? Promise.all(args) : (args as () => unknown)(),
