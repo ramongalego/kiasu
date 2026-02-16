@@ -49,21 +49,36 @@ export default async function PublicProfilePage({
 
   const avatarSrc = user.profilePictureUrl ?? user.avatarUrl ?? null;
 
-  const studyLists = await prisma.studyList.findMany({
-    where: isOwner ? { userId: user.id } : { userId: user.id, isPublic: true },
-    select: {
-      id: true,
-      title: true,
-      description: true,
-      slug: true,
-      category: true,
-      isPublic: true,
-      position: true,
-      _count: { select: { items: true } },
-      copiedFrom: { select: { user: { select: { username: true } } } },
-    },
-    orderBy: { position: 'asc' },
-  });
+  const [studyLists, completedCount, copiedCount] = await Promise.all([
+    prisma.studyList.findMany({
+      where: isOwner
+        ? { userId: user.id }
+        : { userId: user.id, isPublic: true },
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        slug: true,
+        category: true,
+        isPublic: true,
+        position: true,
+        _count: { select: { items: true, copies: true } },
+        copiedFrom: { select: { user: { select: { username: true } } } },
+      },
+      orderBy: { position: 'asc' },
+    }),
+    prisma.studyItem.count({
+      where: { studyList: { userId: user.id }, completed: true },
+    }),
+    prisma.studyList.count({
+      where: { copiedFrom: { userId: user.id } },
+    }),
+  ]);
+
+  const totalItems = studyLists.reduce(
+    (sum, list) => sum + list._count.items,
+    0,
+  );
 
   return (
     <Container as="section" className="py-12">
@@ -105,25 +120,37 @@ export default async function PublicProfilePage({
           )}
         </div>
 
-        {/* Details */}
-        <div className="border-t border-border/50 px-6 py-4">
-          <dl className="space-y-3 text-sm">
-            {isOwner && (
-              <div className="flex items-center justify-between">
-                <dt className="text-muted-foreground">Email</dt>
-                <dd className="font-medium">{user.email}</dd>
-              </div>
-            )}
-            <div className="flex items-center justify-between">
-              <dt className="text-muted-foreground">Member since</dt>
-              <dd className="font-medium">
-                {user.createdAt.toLocaleDateString('en-US', {
-                  month: 'long',
-                  year: 'numeric',
-                })}
-              </dd>
-            </div>
-          </dl>
+        {/* Stats */}
+        <div className="grid grid-cols-3 border-t border-border/50">
+          <div className="py-4 text-center">
+            <p className="text-lg font-semibold">{studyLists.length}</p>
+            <p className="text-xs text-muted-foreground">
+              {studyLists.length === 1 ? 'List' : 'Lists'}
+            </p>
+          </div>
+          <div className="border-x border-border/50 py-4 text-center">
+            <p className="text-lg font-semibold">
+              {totalItems > 0
+                ? `${Math.round((completedCount / totalItems) * 100)}%`
+                : '0%'}
+            </p>
+            <p className="text-xs text-muted-foreground">Completed</p>
+          </div>
+          <div className="py-4 text-center">
+            <p className="text-lg font-semibold">{copiedCount}</p>
+            <p className="text-xs text-muted-foreground">
+              {copiedCount === 1 ? 'Save' : 'Saves'}
+            </p>
+          </div>
+        </div>
+
+        {/* Member since */}
+        <div className="border-t border-border/50 px-6 py-3 text-center text-xs text-muted-foreground">
+          Member since{' '}
+          {user.createdAt.toLocaleDateString('en-US', {
+            month: 'long',
+            year: 'numeric',
+          })}
         </div>
       </div>
 

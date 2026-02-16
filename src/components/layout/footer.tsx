@@ -1,5 +1,5 @@
 import { Container } from '@/components/ui';
-import { BookOpen } from 'lucide-react';
+import { BookOpen, Bug } from 'lucide-react';
 import Link from 'next/link';
 
 export function Footer() {
@@ -14,9 +14,20 @@ export function Footer() {
           <span className="font-semibold">Kiasu</span>
         </Link>
 
-        <p className="text-sm text-muted-foreground">
-          &copy; {new Date().getFullYear()} Kiasu. All rights reserved.
-        </p>
+        <div className="flex items-center gap-4">
+          <a
+            href="https://github.com/raygaledev/kiasu/issues"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1.5 text-sm text-muted-foreground transition-colors duration-200 hover:text-foreground"
+          >
+            <Bug className="h-3.5 w-3.5" />
+            Report an issue
+          </a>
+          {/* <p className="text-sm text-muted-foreground">
+            &copy; {new Date().getFullYear()} Kiasu. All rights reserved.
+          </p> */}
+        </div>
       </Container>
     </footer>
   );
