@@ -111,3 +111,12 @@ body {
   background-color: var(--primary);
   color: var(--primary-foreground);
 }
+
+/* Prevent iOS Safari auto-zoom on input focus (requires >= 16px) */
+@media screen and (max-width: 767px) {
+  input,
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+}
