@@ -2,7 +2,6 @@
 
 import { createClient } from '@/lib/supabase/client';
 import { Card, Button, Container, Skeleton } from '@/components/ui';
-import { SocialLoginButtons } from './social-login-buttons';
 import { loginSchema } from '@/lib/validations/schemas';
 import { resolveUsernameToEmail } from '@/app/auth/actions';
 import Link from 'next/link';
@@ -88,24 +87,13 @@ export function LoginForm() {
   }
 
   return (
-    <div className="flex min-h-[60vh] items-center justify-center">
-      <Card className="w-full max-w-md space-y-6">
+    <div className="flex min-h-[80vh] items-center justify-center">
+      <Card className="w-full max-w-md space-y-6 p-8">
         <div className="text-center">
           <h1 className="text-2xl font-bold">Welcome back</h1>
           <p className="mt-2 text-sm text-muted-foreground">
             Sign in to continue to Kiasu
           </p>
-        </div>
-
-        <SocialLoginButtons />
-
-        <div className="relative">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-border/50" />
-          </div>
-          <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-card px-2 text-muted-foreground">or</span>
-          </div>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
