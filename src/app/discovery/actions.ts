@@ -66,7 +66,7 @@ export async function copyStudyList(studyListId: string) {
   });
 
   if (alreadyCopied) {
-    return { error: 'You already copied this list' };
+    return { error: 'You already saved this list' };
   }
 
   let slug = generateSlug(source.title);

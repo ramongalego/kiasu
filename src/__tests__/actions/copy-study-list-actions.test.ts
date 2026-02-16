@@ -73,7 +73,7 @@ describe('copyStudyList', () => {
       .mockResolvedValueOnce({ id: 'existing-copy' }); // alreadyCopied check
 
     const result = await copyStudyList('list-1');
-    expect(result).toEqual({ error: 'You already copied this list' });
+    expect(result).toEqual({ error: 'You already saved this list' });
     expect(mockPrisma.$transaction).not.toHaveBeenCalled();
   });
 
