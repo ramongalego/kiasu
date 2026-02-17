@@ -29,9 +29,7 @@ export function useHideCompleted() {
     const next = !getSnapshot();
     localStorage.setItem(STORAGE_KEY, String(next));
     // Trigger re-render since useSyncExternalStore only listens to cross-tab storage events
-    window.dispatchEvent(
-      new StorageEvent('storage', { key: STORAGE_KEY }),
-    );
+    window.dispatchEvent(new StorageEvent('storage', { key: STORAGE_KEY }));
   }, []);
 
   return [hideCompleted, toggle] as const;
