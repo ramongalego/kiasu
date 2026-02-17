@@ -20,8 +20,20 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'Kiasu - Learning Path Management',
+  title: {
+    default: 'Kiasu - Learning Path Management',
+    template: '%s - Kiasu',
+  },
   description: 'Create, organize, and share your learning paths with Kiasu',
+  metadataBase: new URL('https://kiasu.co'),
+  openGraph: {
+    siteName: 'Kiasu',
+    type: 'website',
+    locale: 'en_US',
+  },
+  twitter: {
+    card: 'summary',
+  },
 };
 
 export default function RootLayout({

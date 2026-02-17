@@ -1,9 +1,27 @@
+import type { Metadata } from 'next';
 import { createClient } from '@/lib/supabase/server';
 import { prisma } from '@/lib/prisma/client';
 import { Container } from '@/components/ui';
 import { notFound } from 'next/navigation';
 import { Lock } from 'lucide-react';
 import { SharedStudyItemList } from '@/components/share/shared-study-item-list';
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  const list = await prisma.studyList.findFirst({
+    where: { id },
+    select: { title: true, description: true },
+  });
+  if (!list) return { title: 'List Not Found' };
+  return {
+    title: list.title,
+    description: list.description || `Study list: ${list.title}`,
+  };
+}
 
 export default async function SharedStudyListPage({
   params,

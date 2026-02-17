@@ -1,9 +1,16 @@
+import type { Metadata } from 'next';
 import { Container } from '@/components/ui';
 import { DiscoveryListGrid } from '@/components/discovery/discovery-list-grid';
 import { AdUnit } from '@/components/ads/ad-unit';
 import { fetchDiscoveryLists } from './queries';
 import { Compass } from 'lucide-react';
 import { CATEGORY_VALUES } from '@/lib/categories';
+
+export const metadata: Metadata = {
+  title: 'Discovery',
+  description:
+    'Explore public learning paths created by the community on Kiasu.',
+};
 
 export default async function DiscoveryPage({
   searchParams,

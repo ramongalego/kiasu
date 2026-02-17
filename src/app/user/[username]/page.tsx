@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import { createClient } from '@/lib/supabase/server';
 import { prisma } from '@/lib/prisma/client';
 import { notFound } from 'next/navigation';
@@ -5,6 +6,24 @@ import { Container, Avatar } from '@/components/ui';
 import { ProfileAvatar } from '@/components/profile/profile-avatar';
 import { EditProfileButton } from '@/components/profile/edit-profile-button';
 import { ProfileStudyListCard } from '@/components/profile/profile-study-list-card';
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ username: string }>;
+}): Promise<Metadata> {
+  const { username } = await params;
+  const user = await prisma.user.findUnique({
+    where: { username },
+    select: { name: true, username: true },
+  });
+  if (!user) return { title: 'User Not Found' };
+  const displayName = user.name ?? user.username ?? username;
+  return {
+    title: displayName,
+    description: `View ${displayName}'s learning paths on Kiasu.`,
+  };
+}
 
 export default async function PublicProfilePage({
   params,
