@@ -1,11 +1,22 @@
 'use server';
 
+import { z } from 'zod';
 import { createClient } from '@/lib/supabase/server';
 import { prisma } from '@/lib/prisma/client';
 import { generateSlug } from '@/lib/utils';
 import { revalidatePath } from 'next/cache';
 
+const voteSchema = z.object({
+  studyListId: z.string().uuid(),
+  type: z.enum(['UP', 'DOWN']),
+});
+
 export async function voteStudyList(studyListId: string, type: 'UP' | 'DOWN') {
+  const parsed = voteSchema.safeParse({ studyListId, type });
+  if (!parsed.success) {
+    return { error: 'Invalid vote parameters' };
+  }
+
   const supabase = await createClient();
   const {
     data: { user },
@@ -13,6 +24,16 @@ export async function voteStudyList(studyListId: string, type: 'UP' | 'DOWN') {
 
   if (!user) {
     return { error: 'Not authenticated' };
+  }
+
+  // Verify the study list exists and is public
+  const studyList = await prisma.studyList.findFirst({
+    where: { id: studyListId, isPublic: true },
+    select: { id: true },
+  });
+
+  if (!studyList) {
+    return { error: 'Study list not found' };
   }
 
   const existing = await prisma.vote.findUnique({

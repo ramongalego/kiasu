@@ -4,7 +4,7 @@ import { CATEGORY_VALUES } from '@/lib/category-values';
 const safeText = z
   .string()
   .trim()
-  .transform((s) => s.replace(/<[^>]*>/g, ''));
+  .transform((s) => s.replace(/[<>]/g, ''));
 
 export const studyListSchema = z.object({
   title: safeText.pipe(z.string().min(1, 'Title is required').max(200)),
@@ -29,6 +29,14 @@ export const studyItemSchema = z.object({
       (url) => /^https?:\/\//i.test(url),
       'URL must start with http:// or https://',
     )
+    .refine((url) => {
+      try {
+        const parsed = new URL(url);
+        return !parsed.username && !parsed.password;
+      } catch {
+        return false;
+      }
+    }, 'Invalid URL')
     .optional()
     .or(z.literal('')),
   notes: safeText.pipe(z.string().max(2000)).optional().or(z.literal('')),
