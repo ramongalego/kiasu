@@ -25,7 +25,7 @@ export async function createStudyItem(
   });
 
   if (!list) {
-    return { error: 'Study list not found' };
+    return { error: 'Learning path not found' };
   }
 
   const parsed = studyItemSchema.safeParse({
@@ -184,7 +184,7 @@ export async function reorderStudyItems(
   });
 
   if (!list) {
-    return { error: 'Study list not found' };
+    return { error: 'Learning path not found' };
   }
 
   // Verify all item IDs belong to this study list

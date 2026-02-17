@@ -9,7 +9,7 @@ const features = [
     icon: BookOpen,
     title: 'Organize Your Studies',
     description:
-      'Create structured study lists to keep track of everything you need to learn.',
+      'Create structured learning paths to keep track of everything you need to learn.',
   },
   {
     icon: CheckSquare,
@@ -26,7 +26,7 @@ const features = [
     icon: Users,
     title: 'Learn Together',
     description:
-      'Discover study lists from the community and learn from others.',
+      'Discover learning paths from the community and learn from others.',
   },
 ];
 
@@ -52,8 +52,8 @@ export default async function HomePage() {
             </span>
           </h1>
           <p className="mx-auto mt-6 max-w-2xl text-lg font-light text-muted-foreground">
-            Kiasu helps you create, organize, and share study lists so you never
-            miss a thing. Stay ahead of the curve.
+            Kiasu helps you create, organize, and share learning paths so you
+            never miss a thing. Stay ahead of the curve.
           </p>
           <div className="mt-12 flex flex-col items-center gap-3 sm:flex-row sm:justify-center sm:gap-4">
             <Link href="/signup">

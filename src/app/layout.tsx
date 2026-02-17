@@ -19,8 +19,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'Kiasu - Study List Management',
-  description: 'Create, organize, and share your study lists with Kiasu',
+  title: 'Kiasu - Learning Path Management',
+  description: 'Create, organize, and share your learning paths with Kiasu',
 };
 
 export default function RootLayout({

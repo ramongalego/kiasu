@@ -52,7 +52,7 @@ describe('copyStudyList', () => {
     mockPrisma.studyList.findFirst.mockResolvedValue(null);
 
     const result = await copyStudyList('nonexistent');
-    expect(result).toEqual({ error: 'Study list not found' });
+    expect(result).toEqual({ error: 'Learning path not found' });
   });
 
   it('returns error when trying to copy own list', async () => {

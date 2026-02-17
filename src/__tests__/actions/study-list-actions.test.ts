@@ -224,7 +224,7 @@ describe('updateStudyList', () => {
         category: 'programming',
       }),
     );
-    expect(result).toEqual({ error: 'Study list not found' });
+    expect(result).toEqual({ error: 'Learning path not found' });
   });
 
   it('returns error when user does not own the list', async () => {
@@ -238,7 +238,7 @@ describe('updateStudyList', () => {
         category: 'programming',
       }),
     );
-    expect(result).toEqual({ error: 'Study list not found' });
+    expect(result).toEqual({ error: 'Learning path not found' });
   });
 
   it('returns error when title is empty', async () => {
@@ -418,7 +418,7 @@ describe('deleteStudyList', () => {
     mockPrisma.studyList.findFirst.mockResolvedValue(null);
 
     const result = await deleteStudyList('nonexistent');
-    expect(result).toEqual({ error: 'Study list not found' });
+    expect(result).toEqual({ error: 'Learning path not found' });
   });
 
   it('deletes the list and revalidates', async () => {

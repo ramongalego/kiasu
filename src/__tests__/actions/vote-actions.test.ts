@@ -50,7 +50,7 @@ describe('voteStudyList', () => {
 
     const result = await voteStudyList(LIST_ID, 'UP');
 
-    expect(result).toEqual({ error: 'Study list not found' });
+    expect(result).toEqual({ error: 'Learning path not found' });
     expect(mockPrisma.studyList.findFirst).toHaveBeenCalledWith({
       where: { id: LIST_ID, isPublic: true },
       select: { id: true },

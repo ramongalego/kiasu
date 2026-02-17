@@ -33,7 +33,7 @@ export async function voteStudyList(studyListId: string, type: 'UP' | 'DOWN') {
   });
 
   if (!studyList) {
-    return { error: 'Study list not found' };
+    return { error: 'Learning path not found' };
   }
 
   const existing = await prisma.vote.findUnique({
@@ -75,7 +75,7 @@ export async function copyStudyList(studyListId: string) {
   });
 
   if (!source) {
-    return { error: 'Study list not found' };
+    return { error: 'Learning path not found' };
   }
 
   if (source.userId === user.id) {

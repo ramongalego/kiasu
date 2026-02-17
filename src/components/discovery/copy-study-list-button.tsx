@@ -56,7 +56,7 @@ export function CopyStudyListButton({
       onClick={handleCopy}
       disabled={isPending || copied}
       className="relative z-10 cursor-pointer rounded-full p-1.5 text-muted-foreground transition-colors hover:text-primary"
-      aria-label="Save study list"
+      aria-label="Save learning path"
       title="Save to my Dashboard"
     >
       {isPending ? (

@@ -154,9 +154,9 @@ export default async function PublicProfilePage({
         </div>
       </div>
 
-      {/* Study Lists */}
+      {/* Learning Paths */}
       <div className="mx-auto mt-10 max-w-4xl">
-        <h2 className="mb-4 text-lg font-semibold">Study Lists</h2>
+        <h2 className="mb-4 text-lg font-semibold">Learning Paths</h2>
         {studyLists.length > 0 ? (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {studyLists.map((list) => (
@@ -170,8 +170,8 @@ export default async function PublicProfilePage({
         ) : (
           <p className="text-sm text-muted-foreground">
             {isOwner
-              ? 'You haven\u2019t created any study lists yet.'
-              : 'No public study lists yet.'}
+              ? 'You haven\u2019t created any learning paths yet.'
+              : 'No public learning paths yet.'}
           </p>
         )}
       </div>

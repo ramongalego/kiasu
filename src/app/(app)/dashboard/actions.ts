@@ -94,7 +94,7 @@ export async function updateStudyList(formData: FormData) {
   });
 
   if (!existing) {
-    return { error: 'Study list not found' };
+    return { error: 'Learning path not found' };
   }
 
   let slug = existing.slug;
@@ -144,7 +144,7 @@ export async function deleteStudyList(id: string) {
   });
 
   if (!existing) {
-    return { error: 'Study list not found' };
+    return { error: 'Learning path not found' };
   }
 
   // Cascade delete handles items automatically

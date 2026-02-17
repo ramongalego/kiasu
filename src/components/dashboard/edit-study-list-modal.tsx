@@ -84,7 +84,7 @@ export function EditStudyListModal({
       />
       <div className="relative w-full max-w-md rounded-xl border border-border/50 bg-card p-6 shadow-2xl">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold">Edit study list</h2>
+          <h2 className="text-lg font-semibold">Edit learning path</h2>
           <button
             onClick={handleClose}
             className="cursor-pointer rounded-lg p-1 transition-colors duration-200 hover:bg-muted"
@@ -147,7 +147,7 @@ export function EditStudyListModal({
                 rows={3}
                 defaultValue={list.description ?? ''}
                 className={`mt-1 block w-full resize-none rounded-xl border ${errors.description ? 'border-destructive' : 'border-border/50'} bg-muted/50 px-3 py-2 text-sm placeholder:text-muted-foreground focus:border-border focus:outline-none focus:ring-2 focus:ring-ring transition-all duration-200`}
-                placeholder="What is this study list about?"
+                placeholder="What is this learning path about?"
               />
               {errors.description && (
                 <p className="mt-1 text-xs text-destructive">

@@ -31,7 +31,7 @@ export default async function DiscoveryPage({
           Discovery
         </h1>
         <p className="mt-2 text-muted-foreground">
-          Explore public study lists created by the community.
+          Explore public learning paths created by the community.
         </p>
       </div>
 

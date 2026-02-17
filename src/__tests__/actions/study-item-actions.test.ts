@@ -41,7 +41,7 @@ describe('createStudyItem', () => {
       'my-slug',
       createFormData({ title: 'Item' }),
     );
-    expect(result).toEqual({ error: 'Study list not found' });
+    expect(result).toEqual({ error: 'Learning path not found' });
   });
 
   it('returns error when list not owned by user', async () => {
@@ -53,7 +53,7 @@ describe('createStudyItem', () => {
       'my-slug',
       createFormData({ title: 'Item' }),
     );
-    expect(result).toEqual({ error: 'Study list not found' });
+    expect(result).toEqual({ error: 'Learning path not found' });
   });
 
   it('returns error when title is empty', async () => {
@@ -404,7 +404,7 @@ describe('reorderStudyItems', () => {
       'item-1',
       'item-2',
     ]);
-    expect(result).toEqual({ error: 'Study list not found' });
+    expect(result).toEqual({ error: 'Learning path not found' });
     expect(mockPrisma.$transaction).not.toHaveBeenCalled();
   });
 
