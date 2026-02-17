@@ -49,6 +49,7 @@ interface StudyItemListProps {
   description: string | null;
   isPublic: boolean;
   category: string;
+  updatedAt: Date;
 }
 
 function itemReducer(
@@ -85,6 +86,7 @@ export function StudyItemList({
   description,
   isPublic,
   category,
+  updatedAt,
 }: StudyItemListProps) {
   const [, startTransition] = useTransition();
   const [createModalOpen, setCreateModalOpen] = useState(false);
@@ -247,8 +249,17 @@ export function StudyItemList({
         onEditClick={() => setEditModalOpen(true)}
       />
 
+      <p className="mt-4 text-xs text-muted-foreground">
+        Last updated:{' '}
+        {new Date(updatedAt).toLocaleDateString(undefined, {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric',
+        })}
+      </p>
+
       {total > 0 && (
-        <div className="mt-6">
+        <div className="mt-4">
           <ProgressBar
             value={progress}
             label={`${completed} of ${total} completed`}

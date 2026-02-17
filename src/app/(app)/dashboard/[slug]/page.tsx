@@ -37,6 +37,7 @@ export default async function StudyListPage({
         description={studyList.description}
         isPublic={studyList.isPublic}
         category={studyList.category}
+        updatedAt={studyList.updatedAt}
       />
     </Container>
   );
