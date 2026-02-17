@@ -21,7 +21,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: 'Kiasu - Learning Path Management',
+    default: 'Kiasu',
     template: '%s - Kiasu',
   },
   description: 'Create, organize, and share your learning paths with Kiasu',
