@@ -37,7 +37,7 @@ export function AdUnit() {
         style={{ display: 'block' }}
         data-ad-client="ca-pub-6060398577686624"
         data-ad-slot="8409043137"
-        data-ad-format="auto"
+        data-ad-format="horizontal"
         data-full-width-responsive="true"
       />
     </aside>
