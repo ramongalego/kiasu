@@ -5,6 +5,8 @@ export interface User {
   name: string | null;
   avatarUrl: string | null;
   profilePictureUrl: string | null;
+  role: string;
+  tier: string;
   createdAt: Date;
   updatedAt: Date;
 }

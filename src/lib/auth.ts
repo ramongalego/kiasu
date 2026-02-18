@@ -13,11 +13,12 @@ export async function getAuthUser() {
 
   const user = await prisma.user.findUnique({
     where: { id: supabaseUser.id },
-    select: { id: true, role: true },
+    select: { id: true, role: true, tier: true },
   });
 
   return {
     user,
     isAdmin: user?.role === 'admin',
+    isPremium: user?.tier === 'premium',
   };
 }
