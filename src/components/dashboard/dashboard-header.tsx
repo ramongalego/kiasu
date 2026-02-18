@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui';
-import { Plus, Zap } from 'lucide-react';
+import { Plus, Sparkles, Zap } from 'lucide-react';
 import { FREE_TIER_LIMITS } from '@/lib/tier-limits';
 import { UpgradeModal } from './upgrade-modal';
 
@@ -36,7 +36,14 @@ export function DashboardHeader({
           <p className="mt-1 text-muted-foreground">
             Manage and organize your learning paths
           </p>
-          {!isPremium && (
+          {isPremium ? (
+            <div className="mt-4">
+              <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-amber-400 to-orange-400 px-2.5 py-0.5 text-xs font-semibold text-white shadow-sm shadow-amber-500/30">
+                <Sparkles className="h-3 w-3" />
+                Premium
+              </span>
+            </div>
+          ) : (
             <div className="mt-4 flex items-center gap-4 text-xs text-muted-foreground/60">
               <span>
                 <span
@@ -75,6 +82,7 @@ export function DashboardHeader({
             </div>
           )}
         </div>
+
         {hasLists && (
           <Button onClick={onCreateClick}>
             <Plus className="mr-2 h-4 w-4" />
