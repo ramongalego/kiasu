@@ -101,6 +101,7 @@ export const mockPrisma = {
     findFirst: vi.fn(),
     update: vi.fn(),
     updateMany: vi.fn(),
+    count: vi.fn(),
   },
   vote: {
     findUnique: vi.fn(),

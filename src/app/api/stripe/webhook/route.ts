@@ -28,11 +28,13 @@ export async function POST(request: NextRequest) {
         const session = event.data.object as Stripe.Checkout.Session;
         const userId = session.metadata?.userId;
         if (userId) {
+          const isLifetime = session.mode === 'payment';
           await prisma.user.update({
             where: { id: userId },
             data: {
               tier: 'premium',
               stripeCustomerId: session.customer as string,
+              ...(isLifetime && { lifetimePurchase: true }),
             },
           });
         }

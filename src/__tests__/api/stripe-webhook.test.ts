@@ -46,11 +46,15 @@ describe('POST /api/stripe/webhook', () => {
 
   // ── checkout.session.completed ──────────────────────────────
 
-  it('sets tier to premium and stores stripeCustomerId on checkout.session.completed', async () => {
+  it('sets tier to premium and stores stripeCustomerId for subscription checkout', async () => {
     mockConstructEvent.mockReturnValue({
       type: 'checkout.session.completed',
       data: {
-        object: { metadata: { userId: 'user-1' }, customer: 'cus_123' },
+        object: {
+          mode: 'subscription',
+          metadata: { userId: 'user-1' },
+          customer: 'cus_123',
+        },
       },
     });
 
@@ -63,10 +67,37 @@ describe('POST /api/stripe/webhook', () => {
     });
   });
 
+  it('sets tier to premium and lifetimePurchase to true for lifetime payment checkout', async () => {
+    mockConstructEvent.mockReturnValue({
+      type: 'checkout.session.completed',
+      data: {
+        object: {
+          mode: 'payment',
+          metadata: { userId: 'user-1' },
+          customer: 'cus_123',
+        },
+      },
+    });
+
+    const res = await POST(makeRequest('{}', 'sig'));
+
+    expect(res.status).toBe(200);
+    expect(mockPrisma.user.update).toHaveBeenCalledWith({
+      where: { id: 'user-1' },
+      data: {
+        tier: 'premium',
+        stripeCustomerId: 'cus_123',
+        lifetimePurchase: true,
+      },
+    });
+  });
+
   it('does not update the DB when checkout session has no userId metadata', async () => {
     mockConstructEvent.mockReturnValue({
       type: 'checkout.session.completed',
-      data: { object: { metadata: {}, customer: 'cus_123' } },
+      data: {
+        object: { mode: 'subscription', metadata: {}, customer: 'cus_123' },
+      },
     });
 
     const res = await POST(makeRequest('{}', 'sig'));
