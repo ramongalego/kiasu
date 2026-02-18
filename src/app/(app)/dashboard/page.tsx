@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { createClient } from '@/lib/supabase/server';
+import { getAuthUser } from '@/lib/auth';
 import { prisma } from '@/lib/prisma/client';
 import { Container } from '@/components/ui';
 import { StudyListGrid } from '@/components/dashboard/study-list-grid';
@@ -9,10 +9,7 @@ export const metadata: Metadata = {
 };
 
 export default async function DashboardPage() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { user, isPremium } = await getAuthUser();
 
   const [lists, completedCounts] = await Promise.all([
     prisma.studyList.findMany({
@@ -44,7 +41,7 @@ export default async function DashboardPage() {
 
   return (
     <Container as="section" className="py-8">
-      <StudyListGrid studyLists={studyLists} />
+      <StudyListGrid studyLists={studyLists} isPremium={isPremium} />
     </Container>
   );
 }

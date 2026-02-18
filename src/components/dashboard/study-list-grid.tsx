@@ -36,6 +36,7 @@ import type {
 
 interface StudyListGridProps {
   studyLists: StudyListWithItemCount[];
+  isPremium: boolean;
 }
 
 function listReducer(
@@ -60,10 +61,13 @@ function listReducer(
   }
 }
 
-export function StudyListGrid({ studyLists }: StudyListGridProps) {
+export function StudyListGrid({ studyLists, isPremium }: StudyListGridProps) {
   const [, startTransition] = useTransition();
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [optimisticLists, dispatch] = useOptimistic(studyLists, listReducer);
+
+  const totalCount = optimisticLists.length;
+  const privateCount = optimisticLists.filter((l) => !l.isPublic).length;
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -167,6 +171,9 @@ export function StudyListGrid({ studyLists }: StudyListGridProps) {
       <DashboardHeader
         hasLists={optimisticLists.length > 0}
         onCreateClick={() => setCreateModalOpen(true)}
+        isPremium={isPremium}
+        totalCount={totalCount}
+        privateCount={privateCount}
       />
 
       <div className="mt-8">

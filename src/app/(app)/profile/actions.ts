@@ -18,12 +18,13 @@ export async function getProfileInfo() {
 
   const dbUser = await prisma.user.findUnique({
     where: { id: user.id },
-    select: { profilePictureUrl: true, username: true },
+    select: { profilePictureUrl: true, username: true, tier: true },
   });
 
   return {
     profilePictureUrl: dbUser?.profilePictureUrl ?? null,
     username: dbUser?.username ?? null,
+    isPremium: dbUser?.tier === 'premium',
   };
 }
 

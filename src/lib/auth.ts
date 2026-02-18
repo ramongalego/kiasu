@@ -8,7 +8,7 @@ export async function getAuthUser() {
   } = await supabase.auth.getUser();
 
   if (!supabaseUser) {
-    return { user: null, isAdmin: false };
+    return { user: null, isAdmin: false, isPremium: false };
   }
 
   const user = await prisma.user.findUnique({

@@ -405,6 +405,156 @@ describe('updateStudyList', () => {
   });
 });
 
+// ── free tier limits ────────────────────────────────────────
+describe('free tier limits', () => {
+  describe('createStudyList', () => {
+    it('blocks free user when they already have 5 lists', async () => {
+      mockAuthenticated();
+      mockPrisma.studyList.count.mockResolvedValueOnce(5);
+
+      const result = await createStudyList(
+        createFormData({
+          title: 'New List',
+          category: 'programming',
+          isPublic: 'true',
+        }),
+      );
+      expect(result).toEqual({
+        error: 'Free accounts are limited to 5 learning paths.',
+      });
+    });
+
+    it('allows free user when they have 4 lists', async () => {
+      mockAuthenticated();
+      mockPrisma.studyList.count.mockResolvedValueOnce(4);
+      mockPrisma.studyList.findUnique.mockResolvedValue(null);
+      mockPrisma.studyList.create.mockResolvedValue(TEST_STUDY_LIST);
+
+      const result = await createStudyList(
+        createFormData({
+          title: 'New List',
+          category: 'programming',
+          isPublic: 'true',
+        }),
+      );
+      expect(result).toEqual({ success: true });
+    });
+
+    it('blocks free user creating a private list when they already have 2 private lists', async () => {
+      mockAuthenticated();
+      mockPrisma.studyList.count
+        .mockResolvedValueOnce(2) // total count (< 5, passes)
+        .mockResolvedValueOnce(2); // private count (>= 2, blocked)
+
+      const result = await createStudyList(
+        createFormData({
+          title: 'New List',
+          category: 'programming',
+          isPublic: 'false',
+        }),
+      );
+      expect(result).toEqual({
+        error: 'Free accounts are limited to 2 private learning paths.',
+      });
+    });
+
+    it('does not enforce limits for premium users', async () => {
+      mockAuthenticated();
+      mockPrisma.user.findUnique.mockResolvedValue({
+        id: TEST_USER.id,
+        tier: 'premium',
+      });
+      mockPrisma.studyList.findUnique.mockResolvedValue(null);
+      mockPrisma.studyList.create.mockResolvedValue(TEST_STUDY_LIST);
+
+      const result = await createStudyList(
+        createFormData({
+          title: 'New List',
+          category: 'programming',
+          isPublic: 'false',
+        }),
+      );
+      expect(result).toEqual({ success: true });
+      expect(mockPrisma.studyList.count).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('updateStudyList', () => {
+    it('blocks free user from making a list private when they already have 2 private others', async () => {
+      mockAuthenticated();
+      mockPrisma.studyList.findFirst.mockResolvedValue(TEST_STUDY_LIST);
+      mockPrisma.studyList.count.mockResolvedValueOnce(2);
+
+      const result = await updateStudyList(
+        createFormData({
+          id: 'list-1',
+          title: 'My Study List',
+          category: 'programming',
+          isPublic: 'false',
+        }),
+      );
+      expect(result).toEqual({
+        error: 'Free accounts are limited to 2 private learning paths.',
+      });
+    });
+
+    it('allows free user when they have only 1 other private list', async () => {
+      mockAuthenticated();
+      mockPrisma.studyList.findFirst.mockResolvedValue(TEST_STUDY_LIST);
+      mockPrisma.studyList.count.mockResolvedValueOnce(1);
+      mockPrisma.studyList.update.mockResolvedValue(TEST_STUDY_LIST);
+
+      const result = await updateStudyList(
+        createFormData({
+          id: 'list-1',
+          title: 'My Study List',
+          category: 'programming',
+          isPublic: 'false',
+        }),
+      );
+      expect(result).toEqual({ success: true, slug: 'my-study-list' });
+    });
+
+    it('does not enforce private limit for premium users', async () => {
+      mockAuthenticated();
+      mockPrisma.user.findUnique.mockResolvedValue({
+        id: TEST_USER.id,
+        tier: 'premium',
+      });
+      mockPrisma.studyList.findFirst.mockResolvedValue(TEST_STUDY_LIST);
+      mockPrisma.studyList.update.mockResolvedValue(TEST_STUDY_LIST);
+
+      const result = await updateStudyList(
+        createFormData({
+          id: 'list-1',
+          title: 'My Study List',
+          category: 'programming',
+          isPublic: 'false',
+        }),
+      );
+      expect(result).toEqual({ success: true, slug: 'my-study-list' });
+      expect(mockPrisma.studyList.count).not.toHaveBeenCalled();
+    });
+
+    it('skips private check when setting isPublic to true', async () => {
+      mockAuthenticated();
+      mockPrisma.studyList.findFirst.mockResolvedValue(TEST_STUDY_LIST);
+      mockPrisma.studyList.update.mockResolvedValue(TEST_STUDY_LIST);
+
+      const result = await updateStudyList(
+        createFormData({
+          id: 'list-1',
+          title: 'My Study List',
+          category: 'programming',
+          isPublic: 'true',
+        }),
+      );
+      expect(result).toEqual({ success: true, slug: 'my-study-list' });
+      expect(mockPrisma.studyList.count).not.toHaveBeenCalled();
+    });
+  });
+});
+
 // ── deleteStudyList ─────────────────────────────────────────
 describe('deleteStudyList', () => {
   it('returns error when unauthenticated', async () => {

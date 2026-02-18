@@ -3,10 +3,12 @@
 import { useUser } from '@/hooks/use-user';
 import { Button, Container } from '@/components/ui';
 import { UserMenu } from '@/components/auth';
-import { BookOpen, Moon, Sun } from 'lucide-react';
+import { BookOpen, Moon, Sun, Zap } from 'lucide-react';
 import Link from 'next/link';
 import { useTheme } from 'next-themes';
-import { useSyncExternalStore } from 'react';
+import { useSyncExternalStore, useEffect, useState } from 'react';
+import { getProfileInfo } from '@/app/(app)/profile/actions';
+import { UpgradeModal } from '@/components/dashboard/upgrade-modal';
 
 const subscribe = () => () => {};
 
@@ -18,70 +20,91 @@ export function Header() {
     () => true,
     () => false,
   );
+  const [isPremium, setIsPremium] = useState(false);
+  const [upgradeOpen, setUpgradeOpen] = useState(false);
+
+  useEffect(() => {
+    if (!user) return;
+    getProfileInfo().then((info) => {
+      setIsPremium(info?.isPremium ?? false);
+    });
+  }, [user]);
 
   return (
-    <header className="sticky top-0 z-50 border-b border-border/50 bg-background/60 backdrop-blur-xl">
-      <Container className="flex h-18 items-center justify-between">
-        <div className="flex items-center gap-6">
-          <Link
-            href={user ? '/dashboard' : '/'}
-            className="flex items-center gap-2 transition-opacity duration-200 hover:opacity-80"
-          >
-            <BookOpen className="h-8 w-8 text-primary" />
-            <span className="hidden text-2xl font-bold sm:inline">Kiasu</span>
-          </Link>
+    <>
+      <header className="sticky top-0 z-50 border-b border-border/50 bg-background/60 backdrop-blur-xl">
+        <Container className="flex h-18 items-center justify-between">
+          <div className="flex items-center gap-6">
+            <Link
+              href={user ? '/dashboard' : '/'}
+              className="flex items-center gap-2 transition-opacity duration-200 hover:opacity-80"
+            >
+              <BookOpen className="h-8 w-8 text-primary" />
+              <span className="hidden text-2xl font-bold sm:inline">Kiasu</span>
+            </Link>
 
-          <nav className="flex items-center gap-4">
-            {user && (
+            <nav className="flex items-center gap-4">
+              {user && (
+                <Link
+                  href="/dashboard"
+                  className="hidden text-sm text-muted-foreground transition-colors duration-200 hover:text-foreground sm:inline"
+                >
+                  Dashboard
+                </Link>
+              )}
               <Link
-                href="/dashboard"
+                href="/discovery"
                 className="text-sm text-muted-foreground transition-colors duration-200 hover:text-foreground"
               >
-                Dashboard
+                Discovery
               </Link>
-            )}
-            <Link
-              href="/discovery"
-              className="text-sm text-muted-foreground transition-colors duration-200 hover:text-foreground"
-            >
-              Discovery
-            </Link>
-          </nav>
-        </div>
+            </nav>
+          </div>
 
-        <nav className="flex items-center gap-4">
-          {mounted && (
-            <button
-              onClick={() =>
-                setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')
-              }
-              className="cursor-pointer rounded-lg p-2 text-muted-foreground transition-colors duration-200 hover:text-foreground"
-            >
-              {resolvedTheme === 'dark' ? (
-                <Sun className="h-5 w-5" />
-              ) : (
-                <Moon className="h-5 w-5" />
-              )}
-            </button>
-          )}
-          {loading ? (
-            <div className="h-8 w-8 animate-pulse rounded-full bg-muted" />
-          ) : user ? (
-            <UserMenu />
-          ) : (
-            <>
-              <Link href="/login">
-                <Button variant="ghost" size="sm">
-                  Sign in
-                </Button>
-              </Link>
-              <Link href="/signup">
-                <Button size="sm">Get started</Button>
-              </Link>
-            </>
-          )}
-        </nav>
-      </Container>
-    </header>
+          <nav className="flex items-center gap-4">
+            {mounted && (
+              <button
+                onClick={() =>
+                  setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')
+                }
+                className="cursor-pointer rounded-lg p-2 text-muted-foreground transition-colors duration-200 hover:text-foreground"
+              >
+                {resolvedTheme === 'dark' ? (
+                  <Sun className="h-5 w-5" />
+                ) : (
+                  <Moon className="h-5 w-5" />
+                )}
+              </button>
+            )}
+            {loading ? (
+              <div className="h-8 w-8 animate-pulse rounded-full bg-muted" />
+            ) : user ? (
+              <>
+                {!isPremium && (
+                  <Button size="sm" onClick={() => setUpgradeOpen(true)}>
+                    <Zap className="mr-1.5 h-3.5 w-3.5" />
+                    Upgrade
+                  </Button>
+                )}
+                <UserMenu />
+              </>
+            ) : (
+              <>
+                <Link href="/login">
+                  <Button variant="ghost" size="sm">
+                    Sign in
+                  </Button>
+                </Link>
+                <Link href="/signup">
+                  <Button size="sm">Get started</Button>
+                </Link>
+              </>
+            )}
+          </nav>
+        </Container>
+      </header>
+
+      <UpgradeModal open={upgradeOpen} onClose={() => setUpgradeOpen(false)} />
+    </>
   );
 }

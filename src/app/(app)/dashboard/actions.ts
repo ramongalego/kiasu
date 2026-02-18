@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma/client';
 import { studyListSchema } from '@/lib/validations/schemas';
 import { generateSlug } from '@/lib/utils';
 import { revalidatePath } from 'next/cache';
+import { FREE_TIER_LIMITS } from '@/lib/tier-limits';
 
 export async function createStudyList(formData: FormData) {
   const supabase = await createClient();
@@ -28,6 +29,34 @@ export async function createStudyList(formData: FormData) {
 
   const { title, description, category } = parsed.data;
 
+  const dbUser = await prisma.user.findUnique({
+    where: { id: user.id },
+    select: { tier: true },
+  });
+  const isPremium = dbUser?.tier === 'premium';
+
+  if (!isPremium) {
+    const count = await prisma.studyList.count({ where: { userId: user.id } });
+    if (count >= FREE_TIER_LIMITS.studyLists) {
+      return {
+        error: `Free accounts are limited to ${FREE_TIER_LIMITS.studyLists} learning paths.`,
+      };
+    }
+  }
+
+  const isPublic = formData.get('isPublic') === 'true';
+
+  if (!isPremium && !isPublic) {
+    const privateCount = await prisma.studyList.count({
+      where: { userId: user.id, isPublic: false },
+    });
+    if (privateCount >= FREE_TIER_LIMITS.privateStudyLists) {
+      return {
+        error: `Free accounts are limited to ${FREE_TIER_LIMITS.privateStudyLists} private learning paths.`,
+      };
+    }
+  }
+
   let slug = generateSlug(title);
 
   // Ensure slug is unique for this user
@@ -38,8 +67,6 @@ export async function createStudyList(formData: FormData) {
   if (existing) {
     slug = `${slug}-${Date.now()}`;
   }
-
-  const isPublic = formData.get('isPublic') === 'true';
 
   await prisma.$transaction([
     // Shift all existing lists down to make room at position 0
@@ -109,6 +136,23 @@ export async function updateStudyList(formData: FormData) {
   }
 
   const isPublic = formData.get('isPublic') === 'true';
+
+  if (!isPublic) {
+    const dbUser = await prisma.user.findUnique({
+      where: { id: user.id },
+      select: { tier: true },
+    });
+    if (dbUser?.tier !== 'premium') {
+      const privateCount = await prisma.studyList.count({
+        where: { userId: user.id, isPublic: false, id: { not: id } },
+      });
+      if (privateCount >= FREE_TIER_LIMITS.privateStudyLists) {
+        return {
+          error: `Free accounts are limited to ${FREE_TIER_LIMITS.privateStudyLists} private learning paths.`,
+        };
+      }
+    }
+  }
 
   await prisma.studyList.update({
     where: { id },

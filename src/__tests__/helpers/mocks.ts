@@ -84,6 +84,7 @@ export const mockPrisma = {
     update: vi.fn(),
     updateMany: vi.fn(),
     delete: vi.fn(),
+    count: vi.fn(),
   },
   studyItem: {
     findUnique: vi.fn(),
@@ -127,6 +128,7 @@ vi.mock('next/cache', () => ({
 // ── Auth Helper ─────────────────────────────────────────────
 export function mockAuthenticated(user = TEST_USER) {
   mockGetUser.mockResolvedValue({ data: { user } });
+  mockPrisma.user.findUnique.mockResolvedValue({ id: user.id, tier: 'free' });
 }
 
 export function mockUnauthenticated() {
