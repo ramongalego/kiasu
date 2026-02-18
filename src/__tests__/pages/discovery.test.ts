@@ -22,7 +22,7 @@ function makeList(overrides: Record<string, unknown> = {}) {
     category: 'other',
     createdAt: new Date(),
     userId: 'someone-else',
-    user: { username: 'testuser', profilePictureUrl: null, avatarUrl: null },
+    user: { username: 'testuser', profilePictureUrl: null, avatarUrl: null, tier: 'free' },
     _count: { items: 3, copies: 0 },
     ...overrides,
   };
@@ -89,6 +89,7 @@ describe('fetchDiscoveryLists', () => {
           username: true,
           profilePictureUrl: true,
           avatarUrl: true,
+          tier: true,
         },
       },
       _count: { select: { items: true, copies: true } },
@@ -226,6 +227,30 @@ describe('fetchDiscoveryLists', () => {
     const result = await fetchDiscoveryLists();
 
     expect(result.lists[0]!.href).toBe('/dashboard/my-list');
+  });
+
+  it('gives premium users a score boost over equivalent free-tier lists', async () => {
+    const now = Date.now();
+    const oldDate = new Date(now - 30 * 86_400_000); // 30 days old — no freshness bonus
+    const lists = [
+      makeList({
+        id: 'free-list',
+        createdAt: oldDate,
+        user: { username: 'freeuser', profilePictureUrl: null, avatarUrl: null, tier: 'free' },
+      }),
+      makeList({
+        id: 'premium-list',
+        createdAt: oldDate,
+        user: { username: 'premiumuser', profilePictureUrl: null, avatarUrl: null, tier: 'premium' },
+      }),
+    ];
+    mockPrisma.studyList.findMany.mockResolvedValue(lists);
+    mockPrisma.vote.groupBy.mockResolvedValue([]);
+
+    const result = await fetchDiscoveryLists();
+
+    expect(result.lists[0]!.id).toBe('premium-list');
+    expect(result.lists[1]!.id).toBe('free-list');
   });
 
   it('sets href to share page for other users lists', async () => {

@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useTransition } from 'react';
 import { X, Check, Zap } from 'lucide-react';
 import { Button } from '@/components/ui';
 import { FREE_TIER_LIMITS } from '@/lib/tier-limits';
+import { createCheckoutSession } from '@/app/billing/actions';
 
 interface UpgradeModalProps {
   open: boolean;
@@ -23,8 +24,8 @@ const FREE_FEATURES = [
 const PREMIUM_FEATURES = [
   'Unlimited learning paths',
   'Unlimited private paths',
+  'Boosted Discovery ranking',
   'Priority support',
-  'Early access to new features',
   'Everything in Free',
 ];
 
@@ -34,6 +35,7 @@ export function UpgradeModal({
   atLimit = false,
 }: UpgradeModalProps) {
   const [billing, setBilling] = useState<BillingPeriod>('monthly');
+  const [pending, startTransition] = useTransition();
 
   useEffect(() => {
     if (!open) return;
@@ -199,9 +201,15 @@ export function UpgradeModal({
               ))}
             </ul>
 
-            <Button className="w-full">
+            <Button
+              className="w-full"
+              disabled={pending}
+              onClick={() =>
+                startTransition(() => createCheckoutSession(billing))
+              }
+            >
               <Zap className="mr-2 h-4 w-4" />
-              Upgrade Now
+              {pending ? 'Redirecting…' : 'Upgrade Now'}
             </Button>
             <p className="mt-2 text-center text-xs text-muted-foreground">
               Cancel any time. No hidden fees.

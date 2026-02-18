@@ -17,6 +17,7 @@ model User {
   profilePictureUrl String?
   role              String   @default("user")
   tier              String   @default("free")
+  stripeCustomerId  String?  @unique
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 

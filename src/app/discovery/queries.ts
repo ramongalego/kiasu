@@ -3,6 +3,7 @@ import { getAuthUser } from '@/lib/auth';
 
 const MS_PER_DAY = 86_400_000;
 const FRESHNESS_WINDOW_DAYS = 14;
+const PREMIUM_BOOST = 10;
 
 export type DiscoveryList = {
   id: string;
@@ -49,7 +50,12 @@ export async function fetchDiscoveryLists(): Promise<{
       createdAt: true,
       userId: true,
       user: {
-        select: { username: true, profilePictureUrl: true, avatarUrl: true },
+        select: {
+          username: true,
+          profilePictureUrl: true,
+          avatarUrl: true,
+          tier: true,
+        },
       },
       _count: { select: { items: true, copies: true } },
     },
@@ -93,7 +99,9 @@ export async function fetchDiscoveryLists(): Promise<{
       const copyCount = list._count.copies;
       const daysOld = (now - list.createdAt.getTime()) / MS_PER_DAY;
       const freshnessBonus = Math.max(0, FRESHNESS_WINDOW_DAYS - daysOld);
-      const score = netVotes * 3 + copyCount * 5 + freshnessBonus;
+      const premiumBoost = list.user.tier === 'premium' ? PREMIUM_BOOST : 0;
+      const score =
+        netVotes * 3 + copyCount * 5 + freshnessBonus + premiumBoost;
 
       return {
         id: list.id,
@@ -102,7 +110,11 @@ export async function fetchDiscoveryLists(): Promise<{
         description: list.description,
         category: list.category,
         userId: list.userId,
-        user: list.user,
+        user: {
+          username: list.user.username,
+          profilePictureUrl: list.user.profilePictureUrl,
+          avatarUrl: list.user.avatarUrl,
+        },
         _count: { items: list._count.items },
         upvotes: counts.up,
         downvotes: counts.down,

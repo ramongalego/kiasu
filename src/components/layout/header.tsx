@@ -8,6 +8,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useTheme } from 'next-themes';
 import { useSyncExternalStore, useEffect, useState } from 'react';
+import { usePathname } from 'next/navigation';
 import { getProfileInfo } from '@/app/(app)/profile/actions';
 import { UpgradeModal } from '@/components/dashboard/upgrade-modal';
 
@@ -23,6 +24,7 @@ export function Header() {
   );
   const [isPremium, setIsPremium] = useState(false);
   const [upgradeOpen, setUpgradeOpen] = useState(false);
+  const pathname = usePathname();
 
   useEffect(() => {
     if (!user) return;
@@ -70,14 +72,14 @@ export function Header() {
               {user && (
                 <Link
                   href="/dashboard"
-                  className="hidden text-sm text-muted-foreground transition-colors duration-200 hover:text-foreground sm:inline"
+                  className={`hidden text-sm transition-colors duration-200 hover:text-foreground sm:inline ${pathname.startsWith('/dashboard') ? 'text-foreground' : 'text-muted-foreground'}`}
                 >
                   Dashboard
                 </Link>
               )}
               <Link
                 href="/discovery"
-                className="text-sm text-muted-foreground transition-colors duration-200 hover:text-foreground"
+                className={`text-sm transition-colors duration-200 hover:text-foreground ${pathname.startsWith('/discovery') ? 'text-foreground' : 'text-muted-foreground'}`}
               >
                 Discovery
               </Link>

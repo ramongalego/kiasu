@@ -6,6 +6,7 @@ import { Container, Avatar } from '@/components/ui';
 import { ProfileAvatar } from '@/components/profile/profile-avatar';
 import { EditProfileButton } from '@/components/profile/edit-profile-button';
 import { ProfileStudyListCard } from '@/components/profile/profile-study-list-card';
+import { Sparkles } from 'lucide-react';
 
 export async function generateMetadata({
   params,
@@ -42,6 +43,7 @@ export default async function PublicProfilePage({
       avatarUrl: true,
       profilePictureUrl: true,
       createdAt: true,
+      tier: true,
     },
   });
 
@@ -124,6 +126,14 @@ export default async function PublicProfilePage({
         <div className="px-6 pb-6 pt-14 text-center">
           {user.username && (
             <h1 className="text-xl font-semibold">{user.username}</h1>
+          )}
+          {user.tier === 'premium' && (
+            <div className="mt-2 flex justify-center">
+              <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-amber-400 to-orange-400 px-2.5 py-0.5 text-xs font-semibold text-white shadow-sm shadow-amber-500/30">
+                <Sparkles className="h-3 w-3" />
+                Premium
+              </span>
+            </div>
           )}
           {user.name && (
             <p className="mt-1 text-sm text-muted-foreground">{user.name}</p>

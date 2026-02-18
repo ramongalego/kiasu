@@ -2,11 +2,13 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useHideCompleted } from '@/hooks/use-hide-completed';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, Share2 } from 'lucide-react';
 import type { StudyItem } from '@/types';
 import { StudyItemRow } from '@/components/dashboard/study-item-row';
 import { ProgressBar } from '@/components/ui/progress-bar';
 import { CopyStudyListButton } from '@/components/discovery/copy-study-list-button';
+import { Button } from '@/components/ui';
+import { toast } from 'sonner';
 
 interface SharedStudyItemListProps {
   listId: string;
@@ -45,6 +47,11 @@ export function SharedStudyItemList({
   const [checkedIds, setCheckedIds] = useState<Set<string>>(new Set());
   const [hideCompleted, toggleHideCompleted] = useHideCompleted();
 
+  const handleShare = () => {
+    navigator.clipboard.writeText(window.location.href);
+    toast.success('Link copied to clipboard');
+  };
+
   useEffect(() => {
     setCheckedIds(readCheckedIds(listId));
   }, [listId]);
@@ -82,11 +89,15 @@ export function SharedStudyItemList({
             <p className="mt-1 text-muted-foreground">{description}</p>
           )}
         </div>
-        {isAuthenticated && !isOwner && studyListId && (
-          <div className="shrink-0">
+        <div className="flex shrink-0 items-center gap-2">
+          <Button variant="outline" onClick={handleShare}>
+            <Share2 className="mr-2 h-4 w-4" />
+            Share
+          </Button>
+          {isAuthenticated && !isOwner && studyListId && (
             <CopyStudyListButton studyListId={studyListId} variant="button" />
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
       <div className="mt-6">
