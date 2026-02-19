@@ -6,6 +6,7 @@ import { studyListSchema } from '@/lib/validations/schemas';
 import { generateSlug } from '@/lib/utils';
 import { revalidatePath } from 'next/cache';
 import { FREE_TIER_LIMITS } from '@/lib/tier-limits';
+import { sanitizeRichText } from '@/lib/sanitize-rich-text';
 
 export async function createStudyList(formData: FormData) {
   const supabase = await createClient();
@@ -28,6 +29,7 @@ export async function createStudyList(formData: FormData) {
   }
 
   const { title, description, category } = parsed.data;
+  const cleanDescription = sanitizeRichText(description);
 
   const dbUser = await prisma.user.findUnique({
     where: { id: user.id },
@@ -77,7 +79,7 @@ export async function createStudyList(formData: FormData) {
     prisma.studyList.create({
       data: {
         title,
-        description: description || null,
+        description: cleanDescription,
         slug,
         category,
         isPublic,
@@ -114,6 +116,7 @@ export async function updateStudyList(formData: FormData) {
   }
 
   const { title, description, category } = parsed.data;
+  const cleanDescription = sanitizeRichText(description);
 
   // Verify ownership
   const existing = await prisma.studyList.findFirst({
@@ -158,7 +161,7 @@ export async function updateStudyList(formData: FormData) {
     where: { id },
     data: {
       title,
-      description: description || null,
+      description: cleanDescription,
       slug,
       category,
       isPublic,

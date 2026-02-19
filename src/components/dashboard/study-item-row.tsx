@@ -35,7 +35,7 @@ export function StudyItemRow({
   const [editOpen, setEditOpen] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [isOverflowing, setIsOverflowing] = useState(false);
-  const notesRef = useRef<HTMLParagraphElement>(null);
+  const notesRef = useRef<HTMLDivElement>(null);
   const {
     attributes,
     listeners,
@@ -52,10 +52,11 @@ export function StudyItemRow({
 
   useEffect(() => {
     const el = notesRef.current;
-    if (el && !expanded) {
-      setIsOverflowing(el.scrollWidth > el.clientWidth);
+    if (el) {
+      // line-clamp-2 at text-xs ≈ 2 × 20px line-height = 40px
+      setIsOverflowing(el.scrollHeight > 40);
     }
-  }, [item.notes, expanded]);
+  }, [item.notes]);
 
   return (
     <>
@@ -118,15 +119,14 @@ export function StudyItemRow({
           )}
           {item.notes && (
             <div className="mt-1.5">
-              <p
+              <div
                 ref={notesRef}
                 className={cn(
-                  'text-xs text-muted-foreground',
-                  !expanded && 'truncate',
+                  'text-xs text-muted-foreground notes-content',
+                  !expanded && 'line-clamp-2',
                 )}
-              >
-                {item.notes}
-              </p>
+                dangerouslySetInnerHTML={{ __html: item.notes }}
+              />
               {isOverflowing && (
                 <button
                   onClick={(e) => {

@@ -6,4 +6,5 @@ export { Container } from './container';
 export { ProgressBar } from './progress-bar';
 export { Skeleton } from './skeleton';
 export { Spinner } from './spinner';
+export { RichTextEditor } from './rich-text-editor';
 export { UrlIcon } from './url-icon';

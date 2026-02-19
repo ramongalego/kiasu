@@ -124,6 +124,26 @@ describe('createStudyList', () => {
     });
   });
 
+  it('strips unsafe HTML from description before storing', async () => {
+    mockAuthenticated();
+    mockPrisma.studyList.findUnique.mockResolvedValue(null);
+    mockPrisma.studyList.create.mockResolvedValue(TEST_STUDY_LIST);
+
+    await createStudyList(
+      createFormData({
+        title: 'Test',
+        description: '<p>Safe</p><script>alert("xss")</script>',
+        category: 'programming',
+      }),
+    );
+
+    expect(mockPrisma.studyList.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ description: '<p>Safe</p>' }),
+      }),
+    );
+  });
+
   it('sets description to null when empty', async () => {
     mockAuthenticated();
     mockPrisma.studyList.findUnique.mockResolvedValue(null);

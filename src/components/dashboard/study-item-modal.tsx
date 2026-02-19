@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, Spinner } from '@/components/ui';
+import { Button, RichTextEditor, Spinner } from '@/components/ui';
 import { studyItemSchema } from '@/lib/validations/schemas';
 import { X, Youtube } from 'lucide-react';
 import {
@@ -33,6 +33,7 @@ export function StudyItemModal({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [url, setUrl] = useState(item?.url ?? '');
   const [title, setTitle] = useState(item?.title ?? '');
+  const [notesHtml, setNotesHtml] = useState(item?.notes ?? '');
   const [ytTitle, setYtTitle] = useState<string | null>(null);
   const [ytLoading, setYtLoading] = useState(false);
   const isEdit = !!item;
@@ -45,6 +46,7 @@ export function StudyItemModal({
     if (!isEdit) {
       setUrl('');
       setTitle('');
+      setNotesHtml('');
     }
     onClose();
   }, [onClose, isEdit]);
@@ -97,10 +99,12 @@ export function StudyItemModal({
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
+    // Notes come from controlled state (rich text editor), not a native textarea
+    formData.set('notes', notesHtml);
     const result = studyItemSchema.safeParse({
       title: formData.get('title') as string,
       url: formData.get('url') as string,
-      notes: formData.get('notes') as string,
+      notes: notesHtml,
     });
 
     if (!result.success) {
@@ -120,6 +124,7 @@ export function StudyItemModal({
       formRef.current?.reset();
       setUrl('');
       setTitle('');
+      setNotesHtml('');
       setYtTitle(null);
     }
     onClose();
@@ -214,20 +219,14 @@ export function StudyItemModal({
               )}
             </div>
             <div>
-              <label
-                htmlFor={`${prefix}item-notes`}
-                className="block text-sm font-medium"
-              >
-                Notes
-              </label>
-              <textarea
-                id={`${prefix}item-notes`}
-                name="notes"
-                rows={3}
-                defaultValue={item?.notes ?? ''}
-                className={inputClass(!!errors.notes)}
+              <label className="block text-sm font-medium">Notes</label>
+              <RichTextEditor
+                value={notesHtml}
+                onChange={setNotesHtml}
                 placeholder="Any extra notes..."
+                hasError={!!errors.notes}
               />
+              <input type="hidden" name="notes" value={notesHtml} />
               {errors.notes && (
                 <p className="mt-1 text-xs text-destructive">{errors.notes}</p>
               )}

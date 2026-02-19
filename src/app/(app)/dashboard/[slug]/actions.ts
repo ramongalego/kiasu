@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 import { prisma } from '@/lib/prisma/client';
 import { studyItemSchema } from '@/lib/validations/schemas';
 import { revalidatePath } from 'next/cache';
+import { sanitizeRichText } from '@/lib/sanitize-rich-text';
 
 export async function createStudyItem(
   studyListId: string,
@@ -39,6 +40,7 @@ export async function createStudyItem(
   }
 
   const { title, url, notes } = parsed.data;
+  const cleanNotes = sanitizeRichText(notes);
 
   // Get next position
   const lastItem = await prisma.studyItem.findFirst({
@@ -49,7 +51,7 @@ export async function createStudyItem(
   await prisma.studyItem.create({
     data: {
       title,
-      notes: notes || null,
+      notes: cleanNotes,
       url: url || null,
       position: (lastItem?.position ?? -1) + 1,
       studyListId,
@@ -150,12 +152,13 @@ export async function updateStudyItem(
   }
 
   const { title, url, notes } = parsed.data;
+  const cleanNotes = sanitizeRichText(notes);
 
   await prisma.studyItem.update({
     where: { id: itemId },
     data: {
       title,
-      notes: notes || null,
+      notes: cleanNotes,
       url: url || null,
     },
   });

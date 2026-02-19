@@ -55,9 +55,10 @@ export function StudyListHeader({
             )}
           </div>
           {description && (
-            <p className="mt-1 line-clamp-4 text-muted-foreground">
-              {description}
-            </p>
+            <div
+              className="notes-content mt-1 text-muted-foreground"
+              dangerouslySetInnerHTML={{ __html: description }}
+            />
           )}
         </div>
         <div className="flex shrink-0 items-center gap-2">

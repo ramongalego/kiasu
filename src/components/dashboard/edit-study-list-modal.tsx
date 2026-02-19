@@ -1,6 +1,6 @@
 'use client';
 
-import { Button } from '@/components/ui';
+import { Button, RichTextEditor } from '@/components/ui';
 import { studyListSchema } from '@/lib/validations/schemas';
 import { CategorySelect } from './category-select';
 import { X, Trash2 } from 'lucide-react';
@@ -27,6 +27,9 @@ export function EditStudyListModal({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isPublic, setIsPublic] = useState(list.isPublic);
   const [category, setCategory] = useState(list.category);
+  const [descriptionHtml, setDescriptionHtml] = useState(
+    list.description ?? '',
+  );
 
   const handleClose = useCallback(() => {
     setConfirmDelete(false);
@@ -48,9 +51,10 @@ export function EditStudyListModal({
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
+    formData.set('description', descriptionHtml);
     const result = studyListSchema.safeParse({
       title: formData.get('title') as string,
-      description: formData.get('description') as string,
+      description: descriptionHtml,
       category: formData.get('category') as string,
     });
 
@@ -135,20 +139,14 @@ export function EditStudyListModal({
               )}
             </div>
             <div>
-              <label
-                htmlFor="edit-description"
-                className="block text-sm font-medium"
-              >
-                Description
-              </label>
-              <textarea
-                id="edit-description"
-                name="description"
-                rows={3}
-                defaultValue={list.description ?? ''}
-                className={`mt-1 block w-full resize-none rounded-xl border ${errors.description ? 'border-destructive' : 'border-border/50'} bg-muted/50 px-3 py-2 text-sm placeholder:text-muted-foreground focus:border-border focus:outline-none focus:ring-2 focus:ring-ring transition-all duration-200`}
+              <label className="block text-sm font-medium">Description</label>
+              <RichTextEditor
+                value={descriptionHtml}
+                onChange={setDescriptionHtml}
                 placeholder="What is this learning path about?"
+                hasError={!!errors.description}
               />
+              <input type="hidden" name="description" value={descriptionHtml} />
               {errors.description && (
                 <p className="mt-1 text-xs text-destructive">
                   {errors.description}

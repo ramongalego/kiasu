@@ -211,6 +211,72 @@ describe('createStudyItem', () => {
     expect(mockRevalidatePath).toHaveBeenCalledWith('/dashboard/my-slug');
     expect(mockRevalidatePath).toHaveBeenCalledWith('/dashboard');
   });
+
+  it('strips <script> tags from notes before storing', async () => {
+    mockAuthenticated();
+    mockPrisma.studyList.findFirst.mockResolvedValue(TEST_STUDY_LIST);
+    mockPrisma.studyItem.findFirst.mockResolvedValue(null);
+    mockPrisma.studyItem.create.mockResolvedValue(TEST_STUDY_ITEM);
+
+    await createStudyItem(
+      'list-1',
+      'my-slug',
+      createFormData({
+        title: 'Item',
+        notes: '<p>Hello</p><script>alert("xss")</script>',
+      }),
+    );
+
+    expect(mockPrisma.studyItem.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ notes: '<p>Hello</p>' }),
+      }),
+    );
+  });
+
+  it('strips event handler attributes from notes before storing', async () => {
+    mockAuthenticated();
+    mockPrisma.studyList.findFirst.mockResolvedValue(TEST_STUDY_LIST);
+    mockPrisma.studyItem.findFirst.mockResolvedValue(null);
+    mockPrisma.studyItem.create.mockResolvedValue(TEST_STUDY_ITEM);
+
+    await createStudyItem(
+      'list-1',
+      'my-slug',
+      createFormData({
+        title: 'Item',
+        notes: '<p onerror="alert(1)">Safe text</p>',
+      }),
+    );
+
+    expect(mockPrisma.studyItem.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ notes: '<p>Safe text</p>' }),
+      }),
+    );
+  });
+
+  it('preserves allowed rich text tags in notes', async () => {
+    mockAuthenticated();
+    mockPrisma.studyList.findFirst.mockResolvedValue(TEST_STUDY_LIST);
+    mockPrisma.studyItem.findFirst.mockResolvedValue(null);
+    mockPrisma.studyItem.create.mockResolvedValue(TEST_STUDY_ITEM);
+
+    const richNotes =
+      '<p><strong>Bold</strong> and <em>italic</em> and <u>underline</u></p><ul><li>item</li></ul>';
+
+    await createStudyItem(
+      'list-1',
+      'my-slug',
+      createFormData({ title: 'Item', notes: richNotes }),
+    );
+
+    expect(mockPrisma.studyItem.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ notes: richNotes }),
+      }),
+    );
+  });
 });
 
 // ── toggleStudyItem ─────────────────────────────────────────

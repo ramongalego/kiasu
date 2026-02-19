@@ -273,7 +273,7 @@ export function StudyItemList({
               {hideCompleted ? (
                 <>
                   <EyeOff className="h-3.5 w-3.5" />
-                  Show completed
+                  Show completed ({completed})
                 </>
               ) : (
                 <>

@@ -86,7 +86,10 @@ export function SharedStudyItemList({
         <div className="min-w-0">
           <h1 className="text-2xl font-bold">{title}</h1>
           {description && (
-            <p className="mt-1 text-muted-foreground">{description}</p>
+            <div
+              className="notes-content mt-1 text-muted-foreground"
+              dangerouslySetInnerHTML={{ __html: description }}
+            />
           )}
         </div>
         <div className="flex shrink-0 items-center gap-2">
@@ -111,7 +114,7 @@ export function SharedStudyItemList({
             {hideCompleted ? (
               <>
                 <EyeOff className="h-3.5 w-3.5" />
-                Show completed
+                Show completed ({checkedIds.size})
               </>
             ) : (
               <>

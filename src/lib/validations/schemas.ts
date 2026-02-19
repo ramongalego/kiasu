@@ -8,7 +8,7 @@ const safeText = z
 
 export const studyListSchema = z.object({
   title: safeText.pipe(z.string().min(1, 'Title is required').max(200)),
-  description: safeText.pipe(z.string().max(1000)).optional().or(z.literal('')),
+  description: z.string().max(5000).optional().or(z.literal('')),
   category: z
     .string()
     .refine(
@@ -39,7 +39,7 @@ export const studyItemSchema = z.object({
     }, 'Invalid URL')
     .optional()
     .or(z.literal('')),
-  notes: safeText.pipe(z.string().max(2000)).optional().or(z.literal('')),
+  notes: z.string().max(10000).optional().or(z.literal('')),
 });
 
 export const usernameSchema = z

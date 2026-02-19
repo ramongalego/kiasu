@@ -66,9 +66,9 @@ function makeSubscription(overrides: Record<string, unknown> = {}) {
 }
 
 function makeStripeError<T extends Stripe.errors.StripeError>(
-  Ctor: new (raw: { message: string; type: string }) => T,
+  Ctor: new (raw: { message: string; type: Stripe.RawErrorType }) => T,
   message: string,
-  type: string,
+  type: Stripe.RawErrorType,
 ): T {
   return new Ctor({ message, type });
 }
@@ -306,7 +306,7 @@ describe('createLifetimeCheckoutSession', () => {
       makeStripeError(
         Stripe.errors.StripeConnectionError,
         'Network failure',
-        'api_connection_error',
+        'api_error',
       ),
     );
 

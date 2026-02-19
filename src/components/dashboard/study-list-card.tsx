@@ -90,9 +90,10 @@ export function StudyListCard({ list, onEdit, onDelete }: StudyListCardProps) {
               {list.title}
             </h3>
             {list.description && (
-              <p className="mt-1.5 line-clamp-2 text-sm leading-relaxed text-muted-foreground">
-                {list.description}
-              </p>
+              <div
+                className="notes-content mt-1.5 line-clamp-2 text-sm leading-relaxed text-muted-foreground"
+                dangerouslySetInnerHTML={{ __html: list.description }}
+              />
             )}
           </Link>
 
