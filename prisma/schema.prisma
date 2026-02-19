@@ -22,8 +22,9 @@ model User {
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 
-  studyLists StudyList[]
-  votes      Vote[]
+  studyLists      StudyList[]
+  votes           Vote[]
+  supportTickets  SupportTicket[]
 
   @@map("users")
 }
@@ -70,6 +71,18 @@ model StudyItem {
 
   @@index([studyListId])
   @@map("study_items")
+}
+
+model SupportTicket {
+  id        String   @id @default(uuid())
+  userId    String
+  type      String
+  message   String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("support_tickets")
 }
 
 enum VoteType {

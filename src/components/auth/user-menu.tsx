@@ -3,7 +3,8 @@
 import { createClient } from '@/lib/supabase/client';
 import { useUser } from '@/hooks/use-user';
 import { Avatar } from '@/components/ui';
-import { LogOut, UserCircle } from 'lucide-react';
+import { SupportModal } from '@/components/support/support-modal';
+import { Bug, LogOut, UserCircle } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState, useRef, useEffect } from 'react';
@@ -13,6 +14,7 @@ export function UserMenu() {
   const { user } = useUser();
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  const [supportOpen, setSupportOpen] = useState(false);
   const [profilePicture, setProfilePicture] = useState<string | null>(null);
   const [dbUsername, setDbUsername] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -94,6 +96,17 @@ export function UserMenu() {
           </Link>
 
           <button
+            onClick={() => {
+              setOpen(false);
+              setSupportOpen(true);
+            }}
+            className="flex w-full cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors duration-200 hover:bg-muted"
+          >
+            <Bug className="h-4 w-4" />
+            Report an issue
+          </button>
+
+          <button
             onClick={handleSignOut}
             className="flex w-full cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-sm text-destructive transition-colors duration-200 hover:bg-muted"
           >
@@ -102,6 +115,7 @@ export function UserMenu() {
           </button>
         </div>
       )}
+      <SupportModal open={supportOpen} onClose={() => setSupportOpen(false)} />
     </div>
   );
 }

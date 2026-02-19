@@ -1,11 +1,12 @@
 'use client';
 
 import { Container } from '@/components/ui';
+import { SupportModal } from '@/components/support/support-modal';
 import { Bug } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useTheme } from 'next-themes';
-import { useSyncExternalStore } from 'react';
+import { useSyncExternalStore, useState } from 'react';
 
 const subscribe = () => () => {};
 
@@ -16,6 +17,7 @@ export function Footer() {
     () => true,
     () => false,
   );
+  const [open, setOpen] = useState(false);
 
   return (
     <footer className="border-t border-border/50 py-8">
@@ -40,20 +42,19 @@ export function Footer() {
         </Link>
 
         <div className="flex items-center gap-4">
-          <a
-            href="https://github.com/raygaledev/kiasu/issues"
-            target="_blank"
-            rel="noopener noreferrer"
+          <button
+            onClick={() => setOpen(true)}
             className="flex items-center gap-1.5 text-sm text-muted-foreground transition-colors duration-200 hover:text-foreground"
           >
             <Bug className="h-3.5 w-3.5" />
             Report an issue
-          </a>
+          </button>
           {/* <p className="text-sm text-muted-foreground">
             &copy; {new Date().getFullYear()} Kiasu. All rights reserved.
           </p> */}
         </div>
       </Container>
+      <SupportModal open={open} onClose={() => setOpen(false)} />
     </footer>
   );
 }

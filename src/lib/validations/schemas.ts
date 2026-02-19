@@ -76,3 +76,15 @@ export const changePasswordSchema = z.object({
   currentPassword: z.string().min(1, 'Current password is required'),
   newPassword: z.string().min(6, 'Password must be at least 6 characters'),
 });
+
+export const supportTicketSchema = z.object({
+  type: z.enum(['bug', 'feedback', 'support'], {
+    message: 'Please select a type',
+  }),
+  message: safeText.pipe(
+    z
+      .string()
+      .min(10, 'Message must be at least 10 characters')
+      .max(2000, 'Message must be at most 2000 characters'),
+  ),
+});
