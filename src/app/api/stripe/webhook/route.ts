@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { stripe } from '@/lib/stripe/client';
 import { prisma } from '@/lib/prisma/client';
+import { handleSubscriptionDowngrade } from '@/lib/stripe/handle-downgrade';
 import type Stripe from 'stripe';
 
 export async function POST(request: NextRequest) {
@@ -43,20 +44,20 @@ export async function POST(request: NextRequest) {
 
       case 'customer.subscription.deleted': {
         const subscription = event.data.object as Stripe.Subscription;
-        await prisma.user.updateMany({
-          where: { stripeCustomerId: subscription.customer as string },
-          data: { tier: 'free' },
-        });
+        await handleSubscriptionDowngrade(subscription.customer as string);
         break;
       }
 
       case 'customer.subscription.updated': {
         const subscription = event.data.object as Stripe.Subscription;
-        const isActive = subscription.status === 'active';
-        await prisma.user.updateMany({
-          where: { stripeCustomerId: subscription.customer as string },
-          data: { tier: isActive ? 'premium' : 'free' },
-        });
+        if (subscription.status !== 'active') {
+          await handleSubscriptionDowngrade(subscription.customer as string);
+        } else {
+          await prisma.user.updateMany({
+            where: { stripeCustomerId: subscription.customer as string },
+            data: { tier: 'premium' },
+          });
+        }
         break;
       }
     }

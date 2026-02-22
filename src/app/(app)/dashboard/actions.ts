@@ -7,6 +7,7 @@ import { generateSlug } from '@/lib/utils';
 import { revalidatePath } from 'next/cache';
 import { FREE_TIER_LIMITS } from '@/lib/tier-limits';
 import { sanitizeRichText } from '@/lib/sanitize-rich-text';
+import { Prisma } from '@prisma/client';
 
 export async function createStudyList(formData: FormData) {
   const supabase = await createClient();
@@ -196,6 +197,22 @@ export async function deleteStudyList(id: string) {
 
   // Cascade delete handles items automatically
   await prisma.studyList.delete({ where: { id } });
+
+  revalidatePath('/dashboard');
+  return { success: true };
+}
+
+export async function dismissDowngradeNotice() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: 'Not authenticated' };
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { pendingDowngradeNotice: Prisma.JsonNull },
+  });
 
   revalidatePath('/dashboard');
   return { success: true };

@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 export default async function DashboardPage() {
   const { user, isPremium } = await getAuthUser();
 
-  const [lists, completedCounts] = await Promise.all([
+  const [lists, completedCounts, dbUser] = await Promise.all([
     prisma.studyList.findMany({
       where: { userId: user!.id },
       include: {
@@ -24,6 +24,10 @@ export default async function DashboardPage() {
       by: ['studyListId'],
       where: { studyList: { userId: user!.id }, completed: true },
       _count: true,
+    }),
+    prisma.user.findUnique({
+      where: { id: user!.id },
+      select: { pendingDowngradeNotice: true },
     }),
   ]);
 
@@ -39,9 +43,22 @@ export default async function DashboardPage() {
     },
   }));
 
+  const notice = dbUser?.pendingDowngradeNotice;
+  const privatizedCount =
+    notice != null &&
+    typeof notice === 'object' &&
+    !Array.isArray(notice) &&
+    typeof (notice as Record<string, unknown>).privatizedCount === 'number'
+      ? ((notice as Record<string, unknown>).privatizedCount as number)
+      : null;
+
   return (
     <Container as="section" className="py-8">
-      <StudyListGrid studyLists={studyLists} isPremium={isPremium} />
+      <StudyListGrid
+        studyLists={studyLists}
+        isPremium={isPremium}
+        privatizedCount={privatizedCount}
+      />
     </Container>
   );
 }

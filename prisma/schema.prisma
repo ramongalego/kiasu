@@ -18,9 +18,10 @@ model User {
   role              String   @default("user")
   tier              String   @default("free")
   stripeCustomerId  String?  @unique
-  lifetimePurchase  Boolean  @default(false)
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  lifetimePurchase      Boolean  @default(false)
+  pendingDowngradeNotice Json?
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
 
   studyLists      StudyList[]
   votes           Vote[]

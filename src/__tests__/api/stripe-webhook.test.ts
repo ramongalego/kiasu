@@ -3,6 +3,7 @@ import { NextRequest } from 'next/server';
 import { mockPrisma } from '../helpers/mocks';
 
 const mockConstructEvent = vi.fn();
+const mockHandleSubscriptionDowngrade = vi.fn();
 
 vi.mock('@/lib/stripe/client', () => ({
   stripe: {
@@ -10,6 +11,11 @@ vi.mock('@/lib/stripe/client', () => ({
       constructEvent: (...args: unknown[]) => mockConstructEvent(...args),
     },
   },
+}));
+
+vi.mock('@/lib/stripe/handle-downgrade', () => ({
+  handleSubscriptionDowngrade: (...args: unknown[]) =>
+    mockHandleSubscriptionDowngrade(...args),
 }));
 
 import { POST } from '@/app/api/stripe/webhook/route';
@@ -26,6 +32,7 @@ beforeEach(() => {
   vi.clearAllMocks();
   mockPrisma.user.update.mockResolvedValue({});
   mockPrisma.user.updateMany.mockResolvedValue({ count: 1 });
+  mockHandleSubscriptionDowngrade.mockResolvedValue(undefined);
 });
 
 describe('POST /api/stripe/webhook', () => {
@@ -108,7 +115,7 @@ describe('POST /api/stripe/webhook', () => {
 
   // ── customer.subscription.deleted ──────────────────────────
 
-  it('sets tier to free on customer.subscription.deleted', async () => {
+  it('calls handleSubscriptionDowngrade on customer.subscription.deleted', async () => {
     mockConstructEvent.mockReturnValue({
       type: 'customer.subscription.deleted',
       data: { object: { customer: 'cus_123' } },
@@ -117,10 +124,19 @@ describe('POST /api/stripe/webhook', () => {
     const res = await POST(makeRequest('{}', 'sig'));
 
     expect(res.status).toBe(200);
-    expect(mockPrisma.user.updateMany).toHaveBeenCalledWith({
-      where: { stripeCustomerId: 'cus_123' },
-      data: { tier: 'free' },
+    expect(mockHandleSubscriptionDowngrade).toHaveBeenCalledWith('cus_123');
+    expect(mockHandleSubscriptionDowngrade).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not call updateMany directly on customer.subscription.deleted', async () => {
+    mockConstructEvent.mockReturnValue({
+      type: 'customer.subscription.deleted',
+      data: { object: { customer: 'cus_123' } },
     });
+
+    await POST(makeRequest('{}', 'sig'));
+
+    expect(mockPrisma.user.updateMany).not.toHaveBeenCalled();
   });
 
   // ── customer.subscription.updated ──────────────────────────
@@ -138,9 +154,10 @@ describe('POST /api/stripe/webhook', () => {
       where: { stripeCustomerId: 'cus_123' },
       data: { tier: 'premium' },
     });
+    expect(mockHandleSubscriptionDowngrade).not.toHaveBeenCalled();
   });
 
-  it('sets tier to free when subscription status is past_due', async () => {
+  it('calls handleSubscriptionDowngrade when subscription status is past_due', async () => {
     mockConstructEvent.mockReturnValue({
       type: 'customer.subscription.updated',
       data: { object: { customer: 'cus_123', status: 'past_due' } },
@@ -149,13 +166,11 @@ describe('POST /api/stripe/webhook', () => {
     const res = await POST(makeRequest('{}', 'sig'));
 
     expect(res.status).toBe(200);
-    expect(mockPrisma.user.updateMany).toHaveBeenCalledWith({
-      where: { stripeCustomerId: 'cus_123' },
-      data: { tier: 'free' },
-    });
+    expect(mockHandleSubscriptionDowngrade).toHaveBeenCalledWith('cus_123');
+    expect(mockPrisma.user.updateMany).not.toHaveBeenCalled();
   });
 
-  it('sets tier to free when subscription status is canceled', async () => {
+  it('calls handleSubscriptionDowngrade when subscription status is canceled', async () => {
     mockConstructEvent.mockReturnValue({
       type: 'customer.subscription.updated',
       data: { object: { customer: 'cus_123', status: 'canceled' } },
@@ -164,10 +179,8 @@ describe('POST /api/stripe/webhook', () => {
     const res = await POST(makeRequest('{}', 'sig'));
 
     expect(res.status).toBe(200);
-    expect(mockPrisma.user.updateMany).toHaveBeenCalledWith({
-      where: { stripeCustomerId: 'cus_123' },
-      data: { tier: 'free' },
-    });
+    expect(mockHandleSubscriptionDowngrade).toHaveBeenCalledWith('cus_123');
+    expect(mockPrisma.user.updateMany).not.toHaveBeenCalled();
   });
 
   // ── Unknown events ──────────────────────────────────────────
@@ -183,5 +196,6 @@ describe('POST /api/stripe/webhook', () => {
     expect(res.status).toBe(200);
     expect(mockPrisma.user.update).not.toHaveBeenCalled();
     expect(mockPrisma.user.updateMany).not.toHaveBeenCalled();
+    expect(mockHandleSubscriptionDowngrade).not.toHaveBeenCalled();
   });
 });

@@ -44,42 +44,58 @@ export function DashboardHeader({
               </span>
             </div>
           ) : (
-            <div className="mt-4 flex items-center gap-4 text-xs text-muted-foreground/60">
-              <span>
-                <span
-                  className={
-                    totalCount >= FREE_TIER_LIMITS.studyLists
-                      ? 'font-medium text-destructive'
-                      : ''
-                  }
-                >
-                  {totalCount}/{FREE_TIER_LIMITS.studyLists}
-                </span>{' '}
-                Learning Paths
-              </span>
-              <span>·</span>
-              <span>
-                <span
-                  className={
-                    privateCount >= FREE_TIER_LIMITS.privateStudyLists
-                      ? 'font-medium text-destructive'
-                      : ''
-                  }
-                >
-                  {privateCount}/{FREE_TIER_LIMITS.privateStudyLists}
-                </span>{' '}
-                Private Learning Paths
-              </span>
-              {atLimit && (
-                <button
-                  onClick={() => setUpgradeOpen(true)}
-                  className="ml-2 flex cursor-pointer items-center gap-1 font-medium text-primary transition-opacity hover:opacity-80"
-                >
-                  <Zap className="h-3 w-3" />
-                  Upgrade
-                </button>
+            <>
+              <div className="mt-4 flex items-center gap-4 text-xs text-muted-foreground/60">
+                <span>
+                  <span
+                    className={
+                      totalCount >= FREE_TIER_LIMITS.studyLists
+                        ? 'font-medium text-destructive'
+                        : ''
+                    }
+                  >
+                    {totalCount}/{FREE_TIER_LIMITS.studyLists}
+                  </span>{' '}
+                  Learning Paths
+                </span>
+                <span>·</span>
+                <span>
+                  <span
+                    className={
+                      privateCount >= FREE_TIER_LIMITS.privateStudyLists
+                        ? 'font-medium text-destructive'
+                        : ''
+                    }
+                  >
+                    {privateCount}/{FREE_TIER_LIMITS.privateStudyLists}
+                  </span>{' '}
+                  Private Learning Paths
+                </span>
+                {atLimit && (
+                  <button
+                    onClick={() => setUpgradeOpen(true)}
+                    className="ml-2 flex cursor-pointer items-center gap-1 font-medium text-primary transition-opacity hover:opacity-80"
+                  >
+                    <Zap className="h-3 w-3" />
+                    Upgrade
+                  </button>
+                )}
+              </div>
+              {totalCount > FREE_TIER_LIMITS.studyLists && (
+                <div className="mt-3 rounded-lg border border-border/60 bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
+                  You&apos;re over the free plan list limit. You can still
+                  access all your lists, but you can&apos;t create new ones
+                  until you{' '}
+                  <button
+                    onClick={() => setUpgradeOpen(true)}
+                    className="font-medium text-primary underline-offset-2 hover:underline"
+                  >
+                    upgrade
+                  </button>{' '}
+                  or delete some.
+                </div>
               )}
-            </div>
+            </>
           )}
         </div>
 

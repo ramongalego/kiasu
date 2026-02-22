@@ -8,11 +8,13 @@ import {
   TEST_STUDY_LIST,
 } from '../helpers/mocks';
 
+import { Prisma } from '@prisma/client';
 import {
   createStudyList,
   updateStudyList,
   deleteStudyList,
   reorderStudyLists,
+  dismissDowngradeNotice,
 } from '@/app/(app)/dashboard/actions';
 
 beforeEach(() => {
@@ -653,5 +655,44 @@ describe('reorderStudyLists', () => {
       data: { position: 2 },
     });
     expect(mockRevalidatePath).toHaveBeenCalledWith('/dashboard');
+  });
+});
+
+// ── dismissDowngradeNotice ───────────────────────────────────
+describe('dismissDowngradeNotice', () => {
+  it('returns error when unauthenticated', async () => {
+    mockUnauthenticated();
+    const result = await dismissDowngradeNotice();
+    expect(result).toEqual({ error: 'Not authenticated' });
+  });
+
+  it('clears pendingDowngradeNotice using Prisma.JsonNull', async () => {
+    mockAuthenticated();
+    mockPrisma.user.update.mockResolvedValue({});
+
+    await dismissDowngradeNotice();
+
+    expect(mockPrisma.user.update).toHaveBeenCalledWith({
+      where: { id: TEST_USER.id },
+      data: { pendingDowngradeNotice: Prisma.JsonNull },
+    });
+  });
+
+  it('revalidates /dashboard', async () => {
+    mockAuthenticated();
+    mockPrisma.user.update.mockResolvedValue({});
+
+    await dismissDowngradeNotice();
+
+    expect(mockRevalidatePath).toHaveBeenCalledWith('/dashboard');
+  });
+
+  it('returns { success: true }', async () => {
+    mockAuthenticated();
+    mockPrisma.user.update.mockResolvedValue({});
+
+    const result = await dismissDowngradeNotice();
+
+    expect(result).toEqual({ success: true });
   });
 });

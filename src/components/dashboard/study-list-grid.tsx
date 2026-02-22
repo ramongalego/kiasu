@@ -25,6 +25,7 @@ import {
 } from '@/app/(app)/dashboard/actions';
 import { generateSlug } from '@/lib/utils';
 import { DashboardHeader } from './dashboard-header';
+import { DowngradeNoticeBanner } from './downgrade-notice-banner';
 import { EmptyState } from './empty-state';
 import { StudyListCard } from './study-list-card';
 import { CreateStudyListModal } from './create-study-list-modal';
@@ -37,6 +38,7 @@ import type {
 interface StudyListGridProps {
   studyLists: StudyListWithItemCount[];
   isPremium: boolean;
+  privatizedCount: number | null;
 }
 
 function listReducer(
@@ -61,7 +63,11 @@ function listReducer(
   }
 }
 
-export function StudyListGrid({ studyLists, isPremium }: StudyListGridProps) {
+export function StudyListGrid({
+  studyLists,
+  isPremium,
+  privatizedCount,
+}: StudyListGridProps) {
   const [, startTransition] = useTransition();
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [optimisticLists, dispatch] = useOptimistic(studyLists, listReducer);
@@ -168,6 +174,9 @@ export function StudyListGrid({ studyLists, isPremium }: StudyListGridProps) {
 
   return (
     <>
+      {!isPremium && privatizedCount != null && privatizedCount > 0 && (
+        <DowngradeNoticeBanner privatizedCount={privatizedCount} />
+      )}
       <DashboardHeader
         hasLists={optimisticLists.length > 0}
         onCreateClick={() => setCreateModalOpen(true)}
