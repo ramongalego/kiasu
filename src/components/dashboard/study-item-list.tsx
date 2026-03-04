@@ -231,6 +231,23 @@ export function StudyItemList({
     });
   };
 
+  const handleSendToTop = (itemId: string) => {
+    const orderedIds = [
+      itemId,
+      ...optimisticItems.filter((i) => i.id !== itemId).map((i) => i.id),
+    ];
+
+    startTransition(async () => {
+      dispatch({ type: 'reorder', orderedIds });
+      try {
+        const result = await reorderStudyItems(studyListId, slug, orderedIds);
+        if (result.error) toast.error(result.error);
+      } catch {
+        toast.error('Something went wrong. Please try again.');
+      }
+    });
+  };
+
   const completed = optimisticItems.filter((i) => i.completed).length;
   const total = optimisticItems.length;
   const progress = total > 0 ? Math.round((completed / total) * 100) : 0;
@@ -314,6 +331,8 @@ export function StudyItemList({
                     onToggle={() => handleToggle(item.id)}
                     onDelete={() => handleDelete(item.id)}
                     onEdit={(fd) => handleEdit(item.id, fd)}
+                    onSendToTop={() => handleSendToTop(item.id)}
+                    isFirst={optimisticItems[0]?.id === item.id}
                   />
                 ))}
               </div>

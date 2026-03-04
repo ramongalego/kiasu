@@ -2,6 +2,7 @@
 
 import { StudyItemModal } from './study-item-modal';
 import {
+  ArrowUpToLine,
   ChevronDown,
   ChevronUp,
   GripVertical,
@@ -20,6 +21,8 @@ interface StudyItemRowProps {
   onToggle: () => void;
   onDelete?: () => void;
   onEdit?: (formData: FormData) => void;
+  onSendToTop?: () => void;
+  isFirst?: boolean;
   readOnly?: boolean;
   isOverlay?: boolean;
 }
@@ -29,6 +32,8 @@ export function StudyItemRow({
   onToggle,
   onDelete,
   onEdit,
+  onSendToTop,
+  isFirst,
   readOnly,
   isOverlay,
 }: StudyItemRowProps) {
@@ -154,6 +159,15 @@ export function StudyItemRow({
 
         {!readOnly && (
           <div className="flex shrink-0 items-center gap-1">
+            {!item.completed && !isFirst && onSendToTop && (
+              <button
+                onClick={onSendToTop}
+                className="cursor-pointer rounded-lg p-2 text-muted-foreground transition-colors duration-200 hover:bg-muted hover:text-foreground"
+                title="Send to top"
+              >
+                <ArrowUpToLine className="h-4 w-4" />
+              </button>
+            )}
             <button
               {...attributes}
               {...listeners}
