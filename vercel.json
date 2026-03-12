@@ -1,0 +1,9 @@
+{
+  "redirects": [
+    {
+      "source": "/:path*",
+      "destination": "https://www.kiasu.co/:path*",
+      "permanent": true
+    }
+  ]
+}
