@@ -2,6 +2,12 @@
   "redirects": [
     {
       "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "kiasu.co"
+        }
+      ],
       "destination": "https://www.kiasu.co/:path*",
       "permanent": true
     }
