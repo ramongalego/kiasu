@@ -8,9 +8,7 @@ export default defineConfig({
   migrations: {
     path: 'prisma/migrations',
   },
-  engine: 'classic',
   datasource: {
     url: env('DATABASE_URL'),
-    directUrl: env('DIRECT_DATABASE_URL'),
   },
 });
