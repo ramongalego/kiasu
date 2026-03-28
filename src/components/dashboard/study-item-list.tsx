@@ -262,7 +262,10 @@ export function StudyItemList({
   const progress = total > 0 ? Math.round((completed / total) * 100) : 0;
   const visibleItems = hideCompleted
     ? optimisticItems.filter((i) => !i.completed)
-    : optimisticItems;
+    : [
+        ...optimisticItems.filter((i) => i.completed),
+        ...optimisticItems.filter((i) => !i.completed),
+      ];
   const firstUncompletedId = optimisticItems.find(
     (i) => !i.completed,
   )?.id;

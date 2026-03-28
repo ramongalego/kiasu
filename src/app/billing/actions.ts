@@ -116,11 +116,6 @@ export async function createLifetimeCheckoutSession(): Promise<{
     redirect('/login');
   }
 
-  const count = await prisma.user.count({ where: { lifetimePurchase: true } });
-  if (count >= 100) {
-    return { error: 'All 100 lifetime spots have been claimed.' };
-  }
-
   const dbUser = await prisma.user.findUniqueOrThrow({
     where: { id: user.id },
     select: { stripeCustomerId: true, email: true },

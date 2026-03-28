@@ -22,7 +22,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: {
     default: 'Kiasu',
-    template: '%s - Kiasu',
+    template: '%s \u00b7 Kiasu',
   },
   description: 'Create, organize, and share your learning paths with Kiasu',
   metadataBase: new URL('https://kiasu.co'),

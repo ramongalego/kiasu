@@ -244,19 +244,8 @@ describe('createLifetimeCheckoutSession', () => {
     expect(mockRedirect).toHaveBeenCalledWith('/login');
   });
 
-  it('returns sold-out error when 100 spots are claimed', async () => {
-    mockAuthenticated(TEST_USER);
-    mockPrisma.user.count.mockResolvedValue(100);
-    const result = await createLifetimeCheckoutSession();
-    expect(result).toEqual({
-      error: 'All 100 lifetime spots have been claimed.',
-    });
-    expect(mockCheckoutSessionsCreate).not.toHaveBeenCalled();
-  });
-
   it('redirects to the Stripe checkout URL on success', async () => {
     mockAuthenticated(TEST_USER);
-    mockPrisma.user.count.mockResolvedValue(50);
     mockPrisma.user.findUniqueOrThrow.mockResolvedValue({
       stripeCustomerId: 'cus_existing',
       email: TEST_USER.email,
@@ -275,7 +264,6 @@ describe('createLifetimeCheckoutSession', () => {
 
   it('creates a new Stripe customer when user has no customerId', async () => {
     mockAuthenticated(TEST_USER);
-    mockPrisma.user.count.mockResolvedValue(0);
     mockPrisma.user.findUniqueOrThrow.mockResolvedValue({
       stripeCustomerId: null,
       email: TEST_USER.email,
@@ -297,7 +285,6 @@ describe('createLifetimeCheckoutSession', () => {
 
   it('returns a Stripe connection error message when session creation fails', async () => {
     mockAuthenticated(TEST_USER);
-    mockPrisma.user.count.mockResolvedValue(10);
     mockPrisma.user.findUniqueOrThrow.mockResolvedValue({
       stripeCustomerId: 'cus_existing',
       email: TEST_USER.email,
@@ -320,7 +307,6 @@ describe('createLifetimeCheckoutSession', () => {
 
   it('returns a generic error message for non-Stripe errors', async () => {
     mockAuthenticated(TEST_USER);
-    mockPrisma.user.count.mockResolvedValue(10);
     mockPrisma.user.findUniqueOrThrow.mockResolvedValue({
       stripeCustomerId: 'cus_existing',
       email: TEST_USER.email,
@@ -336,7 +322,6 @@ describe('createLifetimeCheckoutSession', () => {
 
   it('creates the session in payment mode', async () => {
     mockAuthenticated(TEST_USER);
-    mockPrisma.user.count.mockResolvedValue(5);
     mockPrisma.user.findUniqueOrThrow.mockResolvedValue({
       stripeCustomerId: 'cus_existing',
       email: TEST_USER.email,
