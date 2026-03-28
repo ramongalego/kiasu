@@ -232,10 +232,19 @@ export function StudyItemList({
   };
 
   const handleSendToTop = (itemId: string) => {
-    const orderedIds = [
-      itemId,
-      ...optimisticItems.filter((i) => i.id !== itemId).map((i) => i.id),
-    ];
+    // Move item to the top of uncompleted items, keeping completed items
+    // in their current positions so they don't drift to the bottom over time.
+    const orderedIds: string[] = [];
+    let inserted = false;
+    for (const item of optimisticItems) {
+      if (item.id === itemId) continue;
+      if (!item.completed && !inserted) {
+        orderedIds.push(itemId);
+        inserted = true;
+      }
+      orderedIds.push(item.id);
+    }
+    if (!inserted) orderedIds.push(itemId);
 
     startTransition(async () => {
       dispatch({ type: 'reorder', orderedIds });
@@ -254,6 +263,9 @@ export function StudyItemList({
   const visibleItems = hideCompleted
     ? optimisticItems.filter((i) => !i.completed)
     : optimisticItems;
+  const firstUncompletedId = optimisticItems.find(
+    (i) => !i.completed,
+  )?.id;
 
   return (
     <>
@@ -332,7 +344,7 @@ export function StudyItemList({
                     onDelete={() => handleDelete(item.id)}
                     onEdit={(fd) => handleEdit(item.id, fd)}
                     onSendToTop={() => handleSendToTop(item.id)}
-                    isFirst={optimisticItems[0]?.id === item.id}
+                    isFirst={item.id === firstUncompletedId}
                   />
                 ))}
               </div>
