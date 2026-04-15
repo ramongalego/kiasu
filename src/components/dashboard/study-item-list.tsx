@@ -266,9 +266,7 @@ export function StudyItemList({
         ...optimisticItems.filter((i) => i.completed),
         ...optimisticItems.filter((i) => !i.completed),
       ];
-  const firstUncompletedId = optimisticItems.find(
-    (i) => !i.completed,
-  )?.id;
+  const firstUncompletedId = optimisticItems.find((i) => !i.completed)?.id;
 
   return (
     <>

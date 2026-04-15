@@ -101,15 +101,32 @@ export default async function HomePage() {
       />
 
       {/* Hero */}
-      <section className="py-20 sm:py-32 lg:py-44">
-        <Container className="text-center">
-          <h1 className="text-4xl font-bold tracking-tight sm:text-5xl lg:text-7xl">
+      <section className="relative overflow-hidden py-20 sm:py-32 lg:py-44">
+        {/* Aurora — three soft blurred blobs echoing the indigo→violet gradient */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0"
+        >
+          <div className="absolute -top-24 -left-20 h-[420px] w-[420px] rounded-full bg-indigo-500/25 blur-3xl dark:bg-indigo-500/20" />
+          <div className="absolute top-10 -right-24 h-[460px] w-[460px] animate-[heroGlow_9s_ease-in-out_infinite] rounded-full bg-violet-500/20 blur-3xl dark:bg-violet-500/15" />
+          <div className="absolute bottom-[-180px] left-1/3 h-[360px] w-[360px] -translate-x-1/2 rounded-full bg-indigo-400/20 blur-3xl dark:bg-indigo-400/10" />
+        </div>
+
+        <Container className="relative text-center">
+          <h1 className="text-4xl font-bold leading-[1.05] tracking-tight sm:text-5xl lg:text-7xl">
             Organize your{' '}
             <span className="bg-gradient-to-r from-indigo-400 to-violet-400 bg-clip-text text-transparent">
               learning paths
+            </span>{' '}
+            <br />
+            and{' '}
+            <span className="relative inline-block">
+              <span
+                aria-hidden="true"
+                className="absolute inset-x-[-0.15em] top-[0.15em] bottom-[0.1em] z-0 -rotate-[1.5deg] rounded-[0.15em] bg-indigo-400/35 dark:bg-indigo-400/30"
+              />
+              <span className="relative z-10">study resources</span>
             </span>
-            {' '}<br/>
-            and study resources
           </h1>
           <p className="mx-auto mt-6 max-w-2xl text-lg font-light text-muted-foreground">
             Collect articles, videos, courses, and any resource into structured
@@ -120,7 +137,7 @@ export default async function HomePage() {
             <Link href="/signup">
               <Button
                 size="lg"
-                className="bg-gradient-to-r from-indigo-500 to-violet-500 hover:from-indigo-600 hover:to-violet-600 shadow-lg shadow-indigo-500/20"
+                className="bg-gradient-to-r from-indigo-500 to-violet-500 hover:from-indigo-600 hover:to-violet-600 shadow-lg shadow-indigo-500/20 transition-all hover:shadow-[0_0_0_4px_rgba(99,102,241,0.2)]"
               >
                 Get started for free
               </Button>
@@ -147,13 +164,16 @@ export default async function HomePage() {
             Simple tools to help you organize your learning journey.
           </p>
 
-          <div className="mt-16 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-            {features.map((feature) => (
+          <div className="mt-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {features.map((feature, i) => (
               <div
                 key={feature.title}
-                className="group rounded-xl border border-border/50 p-6 text-center transition-all duration-200 hover:border-border hover:shadow-lg hover:shadow-primary/5"
+                className="group relative rounded-2xl border border-border/50 p-6 text-center transition-all duration-300 hover:-translate-y-1 hover:border-indigo-500/40 hover:shadow-[0_10px_30px_-12px_rgba(99,102,241,0.25)]"
               >
-                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500/10 to-violet-500/10">
+                <span className="absolute top-4 right-4 font-mono text-xs text-muted-foreground/50">
+                  0{i + 1}
+                </span>
+                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500/10 to-violet-500/10 transition-transform duration-300 group-hover:-rotate-6 group-hover:scale-105">
                   <feature.icon className="h-6 w-6 text-primary" />
                 </div>
                 <h3 className="mt-4 font-semibold">{feature.title}</h3>
@@ -176,14 +196,14 @@ export default async function HomePage() {
             Start for free. Pay once if you want more.
           </p>
 
-          <div className="mx-auto mt-16 grid max-w-3xl gap-8 sm:grid-cols-2">
+          <div className="mx-auto mt-16 grid max-w-3xl gap-6 sm:grid-cols-2">
             {/* Free */}
-            <div className="flex flex-col rounded-xl border border-border/50 p-6">
+            <div className="flex flex-col rounded-2xl border border-border/50 p-6 transition-all duration-300 hover:-translate-y-1 hover:border-border hover:shadow-lg">
               <p className="text-xl font-bold">Free</p>
-              <p className="mt-2 text-3xl font-bold">
-                $0
+              <p className="mt-2 flex items-baseline gap-1.5 text-3xl font-bold tracking-tight">
+                <span>$0</span>
                 <span className="text-base font-normal text-muted-foreground">
-                  {' '}forever
+                  forever
                 </span>
               </p>
               <p className="mt-1 text-xs text-muted-foreground">
@@ -207,12 +227,17 @@ export default async function HomePage() {
             </div>
 
             {/* Premium */}
-            <div className="flex flex-col rounded-xl border-2 border-primary/40 bg-primary/5 p-6">
+            <div className="relative flex flex-col overflow-hidden rounded-2xl border-2 border-primary/40 bg-primary/5 p-6 transition-all duration-300 hover:-translate-y-1 hover:border-primary/60 hover:shadow-[0_20px_50px_-20px_rgba(99,102,241,0.4)]">
+              {/* Subtle dot pattern in the top-right corner */}
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle,rgba(99,102,241,0.22)_1px,transparent_1px)] bg-[length:24px_24px] [mask-image:radial-gradient(ellipse_80%_60%_at_100%_0%,black_10%,transparent_70%)] [-webkit-mask-image:radial-gradient(ellipse_80%_60%_at_100%_0%,black_10%,transparent_70%)]"
+              />
               <p className="text-xl font-bold">Premium</p>
-              <p className="mt-2 text-3xl font-bold">
-                $9.99
+              <p className="mt-2 flex items-baseline gap-1.5 text-3xl font-bold tracking-tight">
+                <span>$9.99</span>
                 <span className="text-base font-normal text-muted-foreground">
-                  {' '}one-time
+                  one-time
                 </span>
               </p>
               <p className="mt-1 text-xs text-muted-foreground">
@@ -228,9 +253,7 @@ export default async function HomePage() {
               </ul>
               <div className="mt-6">
                 <Link href="/upgrade">
-                  <Button
-                    className="w-full bg-gradient-to-r from-indigo-500 to-violet-500 hover:from-indigo-600 hover:to-violet-600"
-                  >
+                  <Button className="w-full bg-gradient-to-r from-indigo-500 to-violet-500 shadow-lg shadow-indigo-500/20 transition-all hover:from-indigo-600 hover:to-violet-600 hover:shadow-[0_0_0_4px_rgba(99,102,241,0.2)]">
                     Upgrade for $9.99
                   </Button>
                 </Link>
@@ -240,11 +263,28 @@ export default async function HomePage() {
         </Container>
       </section>
 
-      {/* CTA */}
-      <section className="border-t border-border/50 py-24">
-        <Container className="text-center">
+      {/* CTA — aurora bookend to the hero */}
+      <section className="relative overflow-hidden border-t border-border/50 py-24">
+        {/* Aurora blobs — mirrored/inverted from the hero */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0"
+        >
+          <div className="absolute -right-24 -bottom-20 h-[360px] w-[360px] rounded-full bg-indigo-500/20 blur-3xl dark:bg-indigo-500/15" />
+          <div className="absolute -bottom-10 -left-24 h-[380px] w-[380px] animate-[heroGlow_9s_ease-in-out_infinite] rounded-full bg-violet-500/18 blur-3xl dark:bg-violet-500/12" />
+        </div>
+
+        <Container className="relative text-center">
           <h2 className="text-3xl font-bold sm:text-4xl">
-            Ready to get started?
+            Ready to{' '}
+            <span className="relative inline-block">
+              <span
+                aria-hidden="true"
+                className="absolute inset-x-[-0.15em] top-[0.15em] bottom-[0.1em] z-0 -rotate-[1.5deg] rounded-[0.15em] bg-indigo-400/35 dark:bg-indigo-400/30"
+              />
+              <span className="relative z-10">get started</span>
+            </span>
+            ?
           </h2>
           <p className="mx-auto mt-4 max-w-xl font-light text-muted-foreground">
             Free to start. One-off upgrade if you want more. No recurring fees,
@@ -254,7 +294,7 @@ export default async function HomePage() {
             <Link href="/signup">
               <Button
                 size="lg"
-                className="bg-gradient-to-r from-indigo-500 to-violet-500 hover:from-indigo-600 hover:to-violet-600 shadow-lg shadow-indigo-500/20"
+                className="bg-gradient-to-r from-indigo-500 to-violet-500 shadow-lg shadow-indigo-500/20 transition-all hover:from-indigo-600 hover:to-violet-600 hover:shadow-[0_0_0_4px_rgba(99,102,241,0.2)]"
               >
                 Create your account
               </Button>
