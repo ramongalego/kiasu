@@ -2,7 +2,11 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { prisma } from '@/lib/prisma/client';
-import { studyListSchema } from '@/lib/validations/schemas';
+import {
+  studyListSchema,
+  idSchema,
+  idArraySchema,
+} from '@/lib/validations/schemas';
 import { generateSlug } from '@/lib/utils';
 import { revalidatePath } from 'next/cache';
 import { FREE_TIER_LIMITS } from '@/lib/tier-limits';
@@ -104,7 +108,11 @@ export async function updateStudyList(formData: FormData) {
     return { error: 'Not authenticated' };
   }
 
-  const id = formData.get('id') as string;
+  const idParsed = idSchema.safeParse(formData.get('id'));
+  if (!idParsed.success) {
+    return { error: 'Invalid list ID' };
+  }
+  const id = idParsed.data;
 
   const parsed = studyListSchema.safeParse({
     title: (formData.get('title') as string) ?? '',
@@ -178,6 +186,11 @@ export async function updateStudyList(formData: FormData) {
 }
 
 export async function deleteStudyList(id: string) {
+  const idParsed = idSchema.safeParse(id);
+  if (!idParsed.success) {
+    return { error: 'Invalid list ID' };
+  }
+
   const supabase = await createClient();
   const {
     data: { user },
@@ -188,15 +201,14 @@ export async function deleteStudyList(id: string) {
   }
 
   const existing = await prisma.studyList.findFirst({
-    where: { id, userId: user.id },
+    where: { id: idParsed.data, userId: user.id },
   });
 
   if (!existing) {
     return { error: 'Learning path not found' };
   }
 
-  // Cascade delete handles items automatically
-  await prisma.studyList.delete({ where: { id } });
+  await prisma.studyList.delete({ where: { id: idParsed.data } });
 
   revalidatePath('/dashboard');
   return { success: true };
@@ -219,6 +231,11 @@ export async function dismissDowngradeNotice() {
 }
 
 export async function reorderStudyLists(orderedIds: string[]) {
+  const idsParsed = idArraySchema.safeParse(orderedIds);
+  if (!idsParsed.success) {
+    return { error: 'Invalid list IDs' };
+  }
+
   const supabase = await createClient();
   const {
     data: { user },
@@ -228,19 +245,18 @@ export async function reorderStudyLists(orderedIds: string[]) {
     return { error: 'Not authenticated' };
   }
 
-  // Verify all lists belong to this user
   const lists = await prisma.studyList.findMany({
     where: { userId: user.id },
     select: { id: true },
   });
 
   const userListIds = new Set(lists.map((l) => l.id));
-  if (orderedIds.some((id) => !userListIds.has(id))) {
+  if (idsParsed.data.some((id) => !userListIds.has(id))) {
     return { error: 'Invalid list ID' };
   }
 
   await prisma.$transaction(
-    orderedIds.map((id, index) =>
+    idsParsed.data.map((id, index) =>
       prisma.studyList.update({
         where: { id },
         data: { position: index },

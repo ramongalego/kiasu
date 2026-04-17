@@ -3,6 +3,8 @@
 import { getAuthUser } from '@/lib/auth';
 import { prisma } from '@/lib/prisma/client';
 import { supportTicketSchema } from '@/lib/validations/schemas';
+import { rateLimit, DAY_MS } from '@/lib/rate-limit';
+import { RATE_LIMIT } from '@/lib/constants';
 
 export async function submitSupportTicket(data: {
   type: string;
@@ -11,6 +13,15 @@ export async function submitSupportTicket(data: {
   const { user } = await getAuthUser();
   if (!user) {
     return { error: 'You must be logged in to submit a ticket' };
+  }
+
+  const limit = rateLimit(
+    `support:${user.id}`,
+    RATE_LIMIT.SUPPORT_PER_DAY,
+    DAY_MS,
+  );
+  if (!limit.success) {
+    return { error: 'Daily support ticket limit reached. Try again tomorrow.' };
   }
 
   const result = supportTicketSchema.safeParse(data);

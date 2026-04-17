@@ -7,19 +7,19 @@ datasource db {
 }
 
 model User {
-  id                String   @id @default(uuid())
-  email             String   @unique
-  username          String?  @unique
-  name              String?
-  avatarUrl         String?
-  profilePictureUrl String?
-  role              String   @default("user")
-  tier              String   @default("free")
-  stripeCustomerId  String?  @unique
-  lifetimePurchase      Boolean  @default(false)
+  id                     String   @id @default(uuid())
+  email                  String   @unique
+  username               String?  @unique
+  name                   String?
+  avatarUrl              String?
+  profilePictureUrl      String?
+  role                   String   @default("user")
+  tier                   String   @default("free")
+  stripeCustomerId       String?  @unique
+  lifetimePurchase       Boolean  @default(false)
   pendingDowngradeNotice Json?
-  createdAt             DateTime @default(now())
-  updatedAt             DateTime @updatedAt
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
 
   studyLists      StudyList[]
   votes           Vote[]
@@ -81,7 +81,18 @@ model SupportTicket {
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([userId])
+  @@index([createdAt])
   @@map("support_tickets")
+}
+
+model WebhookEvent {
+  id             String   @id @default(uuid())
+  stripeEventId  String   @unique
+  type           String
+  processedAt    DateTime @default(now())
+
+  @@map("webhook_events")
 }
 
 enum VoteType {

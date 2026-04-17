@@ -6,9 +6,12 @@ import { prisma } from '@/lib/prisma/client';
 import { generateSlug } from '@/lib/utils';
 import { getAuthUser } from '@/lib/auth';
 import { revalidatePath } from 'next/cache';
+import { idSchema, uuidSchema } from '@/lib/validations/schemas';
+import { rateLimit, MINUTE_MS } from '@/lib/rate-limit';
+import { RATE_LIMIT } from '@/lib/constants';
 
 const voteSchema = z.object({
-  studyListId: z.string().uuid(),
+  studyListId: uuidSchema,
   type: z.enum(['UP', 'DOWN']),
 });
 
@@ -25,6 +28,15 @@ export async function voteStudyList(studyListId: string, type: 'UP' | 'DOWN') {
 
   if (!user) {
     return { error: 'Not authenticated' };
+  }
+
+  const limit = rateLimit(
+    `vote:${user.id}`,
+    RATE_LIMIT.VOTE_PER_MIN,
+    MINUTE_MS,
+  );
+  if (!limit.success) {
+    return { error: 'Too many vote actions. Try again shortly.' };
   }
 
   // Verify the study list exists and is public
@@ -61,6 +73,11 @@ export async function voteStudyList(studyListId: string, type: 'UP' | 'DOWN') {
 }
 
 export async function copyStudyList(studyListId: string) {
+  const parsed = idSchema.safeParse(studyListId);
+  if (!parsed.success) {
+    return { error: 'Invalid list ID' };
+  }
+
   const supabase = await createClient();
   const {
     data: { user },
@@ -68,6 +85,15 @@ export async function copyStudyList(studyListId: string) {
 
   if (!user) {
     return { error: 'Not authenticated' };
+  }
+
+  const limit = rateLimit(
+    `copy:${user.id}`,
+    RATE_LIMIT.COPY_PER_MIN,
+    MINUTE_MS,
+  );
+  if (!limit.success) {
+    return { error: 'Too many copy actions. Try again shortly.' };
   }
 
   const source = await prisma.studyList.findFirst({
@@ -135,13 +161,18 @@ export async function copyStudyList(studyListId: string) {
 }
 
 export async function adminHideList(listId: string) {
+  const parsed = uuidSchema.safeParse(listId);
+  if (!parsed.success) {
+    return { error: 'Invalid list ID' };
+  }
+
   const { isAdmin } = await getAuthUser();
   if (!isAdmin) {
     return { error: 'Unauthorized' };
   }
 
   await prisma.studyList.update({
-    where: { id: listId },
+    where: { id: parsed.data },
     data: { isPublic: false },
   });
 
@@ -150,13 +181,18 @@ export async function adminHideList(listId: string) {
 }
 
 export async function adminDeleteList(listId: string) {
+  const parsed = uuidSchema.safeParse(listId);
+  if (!parsed.success) {
+    return { error: 'Invalid list ID' };
+  }
+
   const { isAdmin } = await getAuthUser();
   if (!isAdmin) {
     return { error: 'Unauthorized' };
   }
 
   await prisma.studyList.delete({
-    where: { id: listId },
+    where: { id: parsed.data },
   });
 
   revalidatePath('/discovery');

@@ -7,6 +7,7 @@ import { ProfileAvatar } from '@/components/profile/profile-avatar';
 import { EditProfileButton } from '@/components/profile/edit-profile-button';
 import { ProfileStudyListCard } from '@/components/profile/profile-study-list-card';
 import { Sparkles } from 'lucide-react';
+import { USER_PROFILE } from '@/lib/constants';
 
 export async function generateMetadata({
   params,
@@ -88,6 +89,7 @@ export default async function PublicProfilePage({
         copiedFrom: { select: { user: { select: { username: true } } } },
       },
       orderBy: { position: 'asc' },
+      take: USER_PROFILE.MAX_PUBLIC_LISTS,
     }),
     prisma.studyItem.count({
       where: { studyList: { userId: user.id }, completed: true },

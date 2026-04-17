@@ -1,6 +1,5 @@
 'use client';
 
-import { createClient } from '@/lib/supabase/client';
 import { useUser } from '@/hooks/use-user';
 import { Avatar } from '@/components/ui';
 import { SupportModal } from '@/components/support/support-modal';
@@ -9,6 +8,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState, useRef, useEffect } from 'react';
 import { getProfileInfo } from '@/app/(app)/profile/actions';
+import { signOut } from '@/app/auth/actions';
 
 export function UserMenu() {
   const { user } = useUser();
@@ -55,8 +55,7 @@ export function UserMenu() {
   if (!user) return null;
 
   const handleSignOut = async () => {
-    const supabase = createClient();
-    await supabase.auth.signOut();
+    await signOut();
     router.push('/');
     router.refresh();
   };

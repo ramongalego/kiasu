@@ -4,13 +4,16 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { prisma } from '@/lib/prisma/client';
 import { stripe } from '@/lib/stripe/client';
+import { env, appBaseUrl } from '@/lib/env';
 import Stripe from 'stripe';
 
 const PRICES = {
-  monthly: process.env.STRIPE_PRICE_MONTHLY!,
-  yearly: process.env.STRIPE_PRICE_YEARLY!,
-  lifetime: process.env.STRIPE_PRICE_LIFETIME!,
-};
+  monthly: env.STRIPE_PRICE_MONTHLY,
+  yearly: env.STRIPE_PRICE_YEARLY,
+  lifetime: env.STRIPE_PRICE_LIFETIME,
+} as const;
+
+type CheckoutMode = 'subscription' | 'payment';
 
 function stripeErrorMessage(err: Stripe.errors.StripeError): string {
   switch (err.type) {
@@ -29,6 +32,99 @@ function stripeErrorMessage(err: Stripe.errors.StripeError): string {
     default:
       return 'Something went wrong with the payment. Please try again.';
   }
+}
+
+async function getAuthedUserOrRedirect(): Promise<{
+  id: string;
+  email: string;
+  stripeCustomerId: string | null;
+}> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect('/login');
+  }
+
+  const dbUser = await prisma.user.findUniqueOrThrow({
+    where: { id: user.id },
+    select: { stripeCustomerId: true, email: true },
+  });
+
+  return {
+    id: user.id,
+    email: dbUser.email,
+    stripeCustomerId: dbUser.stripeCustomerId,
+  };
+}
+
+type EnsureCustomerResult =
+  | { customerId: string; error?: undefined }
+  | { customerId?: undefined; error: string };
+
+async function ensureStripeCustomer(
+  userId: string,
+  email: string,
+  existing: string | null,
+): Promise<EnsureCustomerResult> {
+  if (existing) return { customerId: existing };
+
+  try {
+    const customer = await stripe.customers.create({
+      email,
+      metadata: { userId },
+    });
+    await prisma.user.update({
+      where: { id: userId },
+      data: { stripeCustomerId: customer.id },
+    });
+    return { customerId: customer.id };
+  } catch (err) {
+    if (err instanceof Stripe.errors.StripeError) {
+      return { error: stripeErrorMessage(err) };
+    }
+    return { error: 'Failed to set up your account. Please try again.' };
+  }
+}
+
+async function createCheckout(
+  mode: CheckoutMode,
+  priceId: string,
+): Promise<{ error: string } | void> {
+  const user = await getAuthedUserOrRedirect();
+  const customer = await ensureStripeCustomer(
+    user.id,
+    user.email,
+    user.stripeCustomerId,
+  );
+  if (customer.error) return { error: customer.error };
+
+  const baseUrl = appBaseUrl();
+
+  let sessionUrl: string;
+  try {
+    const session = await stripe.checkout.sessions.create({
+      customer: customer.customerId,
+      mode,
+      line_items: [{ price: priceId, quantity: 1 }],
+      success_url: `${baseUrl}/dashboard?upgraded=true`,
+      cancel_url: `${baseUrl}/dashboard`,
+      metadata: { userId: user.id },
+    });
+    if (!session.url) {
+      return { error: 'Could not create checkout session. Please try again.' };
+    }
+    sessionUrl = session.url;
+  } catch (err) {
+    if (err instanceof Stripe.errors.StripeError) {
+      return { error: stripeErrorMessage(err) };
+    }
+    return { error: 'Could not create checkout session. Please try again.' };
+  }
+
+  redirect(sessionUrl);
 }
 
 export async function getSubscriptionInfo() {
@@ -104,130 +200,10 @@ export async function getLifetimePurchaseCount() {
   return prisma.user.count({ where: { lifetimePurchase: true } });
 }
 
-export async function createLifetimeCheckoutSession(): Promise<{
-  error: string;
-} | void> {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    redirect('/login');
-  }
-
-  const dbUser = await prisma.user.findUniqueOrThrow({
-    where: { id: user.id },
-    select: { stripeCustomerId: true, email: true },
-  });
-
-  let customerId = dbUser.stripeCustomerId;
-  if (!customerId) {
-    try {
-      const customer = await stripe.customers.create({
-        email: dbUser.email,
-        metadata: { userId: user.id },
-      });
-      customerId = customer.id;
-      await prisma.user.update({
-        where: { id: user.id },
-        data: { stripeCustomerId: customer.id },
-      });
-    } catch (err) {
-      if (err instanceof Stripe.errors.StripeError) {
-        return { error: stripeErrorMessage(err) };
-      }
-      return { error: 'Failed to set up your account. Please try again.' };
-    }
-  }
-
-  const baseUrl =
-    process.env.NEXT_PUBLIC_APP_URL ??
-    (process.env.VERCEL_URL
-      ? `https://${process.env.VERCEL_URL}`
-      : 'http://localhost:3000');
-
-  let sessionUrl: string;
-  try {
-    const session = await stripe.checkout.sessions.create({
-      customer: customerId,
-      mode: 'payment',
-      line_items: [{ price: PRICES.lifetime, quantity: 1 }],
-      success_url: `${baseUrl}/dashboard?upgraded=true`,
-      cancel_url: `${baseUrl}/dashboard`,
-      metadata: { userId: user.id },
-    });
-    sessionUrl = session.url!;
-  } catch (err) {
-    if (err instanceof Stripe.errors.StripeError) {
-      return { error: stripeErrorMessage(err) };
-    }
-    return { error: 'Could not create checkout session. Please try again.' };
-  }
-
-  redirect(sessionUrl);
+export async function createLifetimeCheckoutSession() {
+  return createCheckout('payment', PRICES.lifetime);
 }
 
-export async function createCheckoutSession(
-  billing: 'monthly' | 'yearly',
-): Promise<{ error: string } | void> {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    redirect('/login');
-  }
-
-  const dbUser = await prisma.user.findUniqueOrThrow({
-    where: { id: user.id },
-    select: { stripeCustomerId: true, email: true },
-  });
-
-  let customerId = dbUser.stripeCustomerId;
-  if (!customerId) {
-    try {
-      const customer = await stripe.customers.create({
-        email: dbUser.email,
-        metadata: { userId: user.id },
-      });
-      customerId = customer.id;
-      await prisma.user.update({
-        where: { id: user.id },
-        data: { stripeCustomerId: customer.id },
-      });
-    } catch (err) {
-      if (err instanceof Stripe.errors.StripeError) {
-        return { error: stripeErrorMessage(err) };
-      }
-      return { error: 'Failed to set up your account. Please try again.' };
-    }
-  }
-
-  const baseUrl =
-    process.env.NEXT_PUBLIC_APP_URL ??
-    (process.env.VERCEL_URL
-      ? `https://${process.env.VERCEL_URL}`
-      : 'http://localhost:3000');
-
-  let sessionUrl: string;
-  try {
-    const session = await stripe.checkout.sessions.create({
-      customer: customerId,
-      mode: 'subscription',
-      line_items: [{ price: PRICES[billing], quantity: 1 }],
-      success_url: `${baseUrl}/dashboard?upgraded=true`,
-      cancel_url: `${baseUrl}/dashboard`,
-      metadata: { userId: user.id },
-    });
-    sessionUrl = session.url!;
-  } catch (err) {
-    if (err instanceof Stripe.errors.StripeError) {
-      return { error: stripeErrorMessage(err) };
-    }
-    return { error: 'Could not create checkout session. Please try again.' };
-  }
-
-  redirect(sessionUrl);
+export async function createCheckoutSession(billing: 'monthly' | 'yearly') {
+  return createCheckout('subscription', PRICES[billing]);
 }

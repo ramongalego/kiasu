@@ -6,6 +6,13 @@ const safeText = z
   .trim()
   .transform((s) => s.replace(/[<>]/g, ''));
 
+// Lenient id validation — non-empty, length-bounded string. Authorization is
+// enforced separately via ownership checks. Use `uuidSchema` when strictness
+// matters (e.g. untrusted admin inputs).
+export const idSchema = z.string().trim().min(1, 'Invalid ID').max(200);
+export const idArraySchema = z.array(idSchema).min(1).max(500);
+export const uuidSchema = z.string().uuid('Invalid ID');
+
 export const studyListSchema = z.object({
   title: safeText.pipe(z.string().min(1, 'Title is required').max(200)),
   description: z.string().max(5000).optional().or(z.literal('')),

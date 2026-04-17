@@ -32,6 +32,8 @@ beforeEach(() => {
   vi.clearAllMocks();
   mockPrisma.user.update.mockResolvedValue({});
   mockPrisma.user.updateMany.mockResolvedValue({ count: 1 });
+  mockPrisma.webhookEvent.findUnique.mockResolvedValue(null);
+  mockPrisma.webhookEvent.create.mockResolvedValue({});
   mockHandleSubscriptionDowngrade.mockResolvedValue(undefined);
 });
 
@@ -55,6 +57,7 @@ describe('POST /api/stripe/webhook', () => {
 
   it('sets tier to premium and stores stripeCustomerId for subscription checkout', async () => {
     mockConstructEvent.mockReturnValue({
+      id: 'evt_test',
       type: 'checkout.session.completed',
       data: {
         object: {
@@ -76,6 +79,7 @@ describe('POST /api/stripe/webhook', () => {
 
   it('sets tier to premium and lifetimePurchase to true for lifetime payment checkout', async () => {
     mockConstructEvent.mockReturnValue({
+      id: 'evt_test',
       type: 'checkout.session.completed',
       data: {
         object: {
@@ -101,6 +105,7 @@ describe('POST /api/stripe/webhook', () => {
 
   it('does not update the DB when checkout session has no userId metadata', async () => {
     mockConstructEvent.mockReturnValue({
+      id: 'evt_test',
       type: 'checkout.session.completed',
       data: {
         object: { mode: 'subscription', metadata: {}, customer: 'cus_123' },
@@ -117,6 +122,7 @@ describe('POST /api/stripe/webhook', () => {
 
   it('calls handleSubscriptionDowngrade on customer.subscription.deleted', async () => {
     mockConstructEvent.mockReturnValue({
+      id: 'evt_test',
       type: 'customer.subscription.deleted',
       data: { object: { customer: 'cus_123' } },
     });
@@ -130,6 +136,7 @@ describe('POST /api/stripe/webhook', () => {
 
   it('does not call updateMany directly on customer.subscription.deleted', async () => {
     mockConstructEvent.mockReturnValue({
+      id: 'evt_test',
       type: 'customer.subscription.deleted',
       data: { object: { customer: 'cus_123' } },
     });
@@ -143,6 +150,7 @@ describe('POST /api/stripe/webhook', () => {
 
   it('sets tier to premium when subscription status is active', async () => {
     mockConstructEvent.mockReturnValue({
+      id: 'evt_test',
       type: 'customer.subscription.updated',
       data: { object: { customer: 'cus_123', status: 'active' } },
     });
@@ -159,6 +167,7 @@ describe('POST /api/stripe/webhook', () => {
 
   it('calls handleSubscriptionDowngrade when subscription status is past_due', async () => {
     mockConstructEvent.mockReturnValue({
+      id: 'evt_test',
       type: 'customer.subscription.updated',
       data: { object: { customer: 'cus_123', status: 'past_due' } },
     });
@@ -172,6 +181,7 @@ describe('POST /api/stripe/webhook', () => {
 
   it('calls handleSubscriptionDowngrade when subscription status is canceled', async () => {
     mockConstructEvent.mockReturnValue({
+      id: 'evt_test',
       type: 'customer.subscription.updated',
       data: { object: { customer: 'cus_123', status: 'canceled' } },
     });
@@ -183,10 +193,48 @@ describe('POST /api/stripe/webhook', () => {
     expect(mockPrisma.user.updateMany).not.toHaveBeenCalled();
   });
 
+  // ── Idempotency ────────────────────────────────────────────
+
+  it('skips processing and does not re-create when event already processed', async () => {
+    mockPrisma.webhookEvent.findUnique.mockResolvedValue({ id: 'wh-1' });
+    mockConstructEvent.mockReturnValue({
+      id: 'evt_test',
+      type: 'checkout.session.completed',
+      data: {
+        object: {
+          mode: 'subscription',
+          metadata: { userId: 'user-1' },
+          customer: 'cus_123',
+        },
+      },
+    });
+
+    const res = await POST(makeRequest('{}', 'sig'));
+
+    expect(res.status).toBe(200);
+    expect(mockPrisma.user.update).not.toHaveBeenCalled();
+    expect(mockPrisma.webhookEvent.create).not.toHaveBeenCalled();
+  });
+
+  it('records processed event id after handling', async () => {
+    mockConstructEvent.mockReturnValue({
+      id: 'evt_abc',
+      type: 'customer.subscription.updated',
+      data: { object: { customer: 'cus_123', status: 'active' } },
+    });
+
+    await POST(makeRequest('{}', 'sig'));
+
+    expect(mockPrisma.webhookEvent.create).toHaveBeenCalledWith({
+      data: { stripeEventId: 'evt_abc', type: 'customer.subscription.updated' },
+    });
+  });
+
   // ── Unknown events ──────────────────────────────────────────
 
   it('returns 200 and does nothing for unhandled event types', async () => {
     mockConstructEvent.mockReturnValue({
+      id: 'evt_test',
       type: 'payment_intent.created',
       data: { object: {} },
     });

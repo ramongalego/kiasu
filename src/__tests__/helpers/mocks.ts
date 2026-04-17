@@ -112,6 +112,13 @@ export const mockPrisma = {
     count: vi.fn(),
     groupBy: vi.fn(),
   },
+  supportTicket: {
+    create: vi.fn(),
+  },
+  webhookEvent: {
+    findUnique: vi.fn(),
+    create: vi.fn(),
+  },
   $transaction: vi.fn((args: unknown) =>
     Array.isArray(args) ? Promise.all(args) : (args as () => unknown)(),
   ),

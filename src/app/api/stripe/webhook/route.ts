@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { stripe } from '@/lib/stripe/client';
 import { prisma } from '@/lib/prisma/client';
 import { handleSubscriptionDowngrade } from '@/lib/stripe/handle-downgrade';
+import { env } from '@/lib/env';
 import type Stripe from 'stripe';
 
 export async function POST(request: NextRequest) {
@@ -17,13 +18,21 @@ export async function POST(request: NextRequest) {
     event = stripe.webhooks.constructEvent(
       body,
       sig,
-      process.env.STRIPE_WEBHOOK_SECRET!,
+      env.STRIPE_WEBHOOK_SECRET,
     );
   } catch {
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 });
   }
 
   try {
+    const alreadyProcessed = await prisma.webhookEvent.findUnique({
+      where: { stripeEventId: event.id },
+      select: { id: true },
+    });
+    if (alreadyProcessed) {
+      return NextResponse.json({ received: true, duplicate: true });
+    }
+
     switch (event.type) {
       case 'checkout.session.completed': {
         const session = event.data.object as Stripe.Checkout.Session;
@@ -61,6 +70,10 @@ export async function POST(request: NextRequest) {
         break;
       }
     }
+
+    await prisma.webhookEvent.create({
+      data: { stripeEventId: event.id, type: event.type },
+    });
   } catch {
     return NextResponse.json(
       { error: 'Webhook handler failed' },
