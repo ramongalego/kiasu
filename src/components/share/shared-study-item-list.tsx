@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useSyncExternalStore } from 'react';
 import { useHideCompleted } from '@/hooks/use-hide-completed';
 import { Eye, EyeOff, Share2 } from 'lucide-react';
 import type { StudyItem } from '@/types';
@@ -22,12 +22,31 @@ interface SharedStudyItemListProps {
 
 const storageKey = (listId: string) => `kiasu-shared-progress-${listId}`;
 
-function readCheckedIds(listId: string): Set<string> {
+const progressListeners = new Set<() => void>();
+
+function subscribeToProgress(onChange: () => void) {
+  progressListeners.add(onChange);
+  window.addEventListener('storage', onChange);
+  return () => {
+    progressListeners.delete(onChange);
+    window.removeEventListener('storage', onChange);
+  };
+}
+
+function readRawProgress(listId: string): string | null {
   try {
-    const raw = localStorage.getItem(storageKey(listId));
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed)) return new Set(parsed);
+    return localStorage.getItem(storageKey(listId));
+  } catch {
+    return null;
+  }
+}
+
+function parseCheckedIds(raw: string | null): Set<string> {
+  if (!raw) return new Set();
+  try {
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed)) {
+      return new Set(parsed.filter((id) => typeof id === 'string'));
     }
   } catch {
     // ignore corrupt data
@@ -44,7 +63,12 @@ export function SharedStudyItemList({
   isOwner = false,
   studyListId,
 }: SharedStudyItemListProps) {
-  const [checkedIds, setCheckedIds] = useState<Set<string>>(new Set());
+  const rawProgress = useSyncExternalStore(
+    subscribeToProgress,
+    () => readRawProgress(listId),
+    () => null,
+  );
+  const checkedIds = useMemo(() => parseCheckedIds(rawProgress), [rawProgress]);
   const [hideCompleted, toggleHideCompleted] = useHideCompleted();
 
   const handleShare = () => {
@@ -52,22 +76,20 @@ export function SharedStudyItemList({
     toast.success('Link copied to clipboard');
   };
 
-  useEffect(() => {
-    setCheckedIds(readCheckedIds(listId));
-  }, [listId]);
-
   const toggle = useCallback(
     (itemId: string) => {
-      setCheckedIds((prev) => {
-        const next = new Set(prev);
-        if (next.has(itemId)) {
-          next.delete(itemId);
-        } else {
-          next.add(itemId);
-        }
+      const next = parseCheckedIds(readRawProgress(listId));
+      if (next.has(itemId)) {
+        next.delete(itemId);
+      } else {
+        next.add(itemId);
+      }
+      try {
         localStorage.setItem(storageKey(listId), JSON.stringify([...next]));
-        return next;
-      });
+      } catch {
+        // storage unavailable (private mode / quota); progress won't persist
+      }
+      progressListeners.forEach((notify) => notify());
     },
     [listId],
   );
