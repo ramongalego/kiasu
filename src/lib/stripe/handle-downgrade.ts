@@ -4,9 +4,9 @@ import { FREE_TIER_LIMITS } from '@/lib/tier-limits';
 export async function handleSubscriptionDowngrade(stripeCustomerId: string) {
   const user = await prisma.user.findUnique({
     where: { stripeCustomerId },
-    select: { id: true },
+    select: { id: true, lifetimePurchase: true },
   });
-  if (!user) return;
+  if (!user || user.lifetimePurchase) return;
 
   // Keep the 2 most recently updated private lists; convert the rest to public
   const privateLists = await prisma.studyList.findMany({

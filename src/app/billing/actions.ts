@@ -38,6 +38,7 @@ async function getAuthedUserOrRedirect(): Promise<{
   id: string;
   email: string;
   stripeCustomerId: string | null;
+  lifetimePurchase: boolean;
 }> {
   const supabase = await createClient();
   const {
@@ -50,13 +51,14 @@ async function getAuthedUserOrRedirect(): Promise<{
 
   const dbUser = await prisma.user.findUniqueOrThrow({
     where: { id: user.id },
-    select: { stripeCustomerId: true, email: true },
+    select: { stripeCustomerId: true, email: true, lifetimePurchase: true },
   });
 
   return {
     id: user.id,
     email: dbUser.email,
     stripeCustomerId: dbUser.stripeCustomerId,
+    lifetimePurchase: dbUser.lifetimePurchase,
   };
 }
 
@@ -94,6 +96,20 @@ async function createCheckout(
   priceId: string,
 ): Promise<{ error: string } | void> {
   const user = await getAuthedUserOrRedirect();
+  if (user.lifetimePurchase) {
+    return { error: 'You already have lifetime access.' };
+  }
+  if (mode === 'subscription' && user.stripeCustomerId) {
+    const active = await stripe.subscriptions.list({
+      customer: user.stripeCustomerId,
+      status: 'active',
+      limit: 1,
+    });
+    if (active.data.length > 0) {
+      return { error: 'You already have an active subscription.' };
+    }
+  }
+
   const customer = await ensureStripeCustomer(
     user.id,
     user.email,

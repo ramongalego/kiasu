@@ -3,9 +3,11 @@
 import { headers } from 'next/headers';
 import { createClient } from '@/lib/supabase/server';
 import { prisma } from '@/lib/prisma/client';
-import { usernameSchema } from '@/lib/validations/schemas';
+import { loginSchema, usernameSchema } from '@/lib/validations/schemas';
 import { rateLimit, getClientIp, MINUTE_MS } from '@/lib/rate-limit';
 import { RATE_LIMIT } from '@/lib/constants';
+
+const INVALID_CREDENTIALS = 'Wrong email, username or password.';
 
 async function getRateLimitKey(scope: string): Promise<string> {
   const h = await headers();
@@ -37,33 +39,57 @@ export async function checkUsernameAvailability(username: string) {
   return { available: !existing, error: null };
 }
 
-export async function resolveUsernameToEmail(username: string) {
+/**
+ * Signs in with an email or a username. Username lookup happens here on the
+ * server so a user's email is never sent to the browser.
+ */
+export async function signInWithIdentifier(input: {
+  identifier: string;
+  password: string;
+}) {
+  const parsed = loginSchema.safeParse(input);
+  if (!parsed.success) {
+    return { error: 'Enter your email or username and password.' };
+  }
+
   const limit = rateLimit(
-    await getRateLimitKey('resolve-username'),
+    await getRateLimitKey('sign-in'),
     RATE_LIMIT.AUTH_RESOLVE_PER_MIN,
     MINUTE_MS,
   );
   if (!limit.success) {
-    return { email: null, error: 'Too many requests. Try again shortly.' };
+    return { error: 'Too many sign-in attempts. Try again in a minute.' };
   }
 
-  const parsed = usernameSchema.safeParse(username);
-  if (!parsed.success) {
-    return { email: null, error: 'Invalid username' };
+  const { identifier, password } = parsed.data;
+  let email = identifier;
+
+  if (!identifier.includes('@')) {
+    const username = usernameSchema.safeParse(identifier);
+    const user = username.success
+      ? await prisma.user.findFirst({
+          where: {
+            username: { equals: username.data, mode: 'insensitive' },
+          },
+          select: { email: true },
+        })
+      : null;
+    if (!user) return { error: INVALID_CREDENTIALS };
+    email = user.email;
   }
 
-  const user = await prisma.user.findFirst({
-    where: {
-      username: { equals: parsed.data.toLowerCase(), mode: 'insensitive' },
-    },
-    select: { email: true },
-  });
-
-  if (!user) {
-    return { email: null, error: 'No account found with that username' };
+  const supabase = await createClient();
+  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  if (error) {
+    return {
+      error:
+        error.code === 'email_not_confirmed'
+          ? 'Confirm your email first. Check your inbox for the link.'
+          : INVALID_CREDENTIALS,
+    };
   }
 
-  return { email: user.email, error: null };
+  return { error: null };
 }
 
 export async function signOut() {

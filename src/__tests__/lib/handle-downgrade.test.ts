@@ -161,7 +161,18 @@ describe('handleSubscriptionDowngrade', () => {
 
     expect(mockPrisma.user.findUnique).toHaveBeenCalledWith({
       where: { stripeCustomerId: 'cus_abc' },
-      select: { id: true },
+      select: { id: true, lifetimePurchase: true },
     });
+  });
+
+  it('never downgrades a lifetime buyer', async () => {
+    mockPrisma.user.findUnique.mockResolvedValue({
+      id: 'user-1',
+      lifetimePurchase: true,
+    });
+
+    await handleSubscriptionDowngrade('cus_abc');
+
+    expect(mockPrisma.$transaction).not.toHaveBeenCalled();
   });
 });

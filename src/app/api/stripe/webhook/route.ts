@@ -5,6 +5,12 @@ import { handleSubscriptionDowngrade } from '@/lib/stripe/handle-downgrade';
 import { env } from '@/lib/env';
 import type Stripe from 'stripe';
 
+const ENDED_STATUSES = new Set<Stripe.Subscription.Status>([
+  'canceled',
+  'unpaid',
+  'incomplete_expired',
+]);
+
 export async function POST(request: NextRequest) {
   const body = await request.text();
   const sig = request.headers.get('stripe-signature');
@@ -34,19 +40,35 @@ export async function POST(request: NextRequest) {
     }
 
     switch (event.type) {
-      case 'checkout.session.completed': {
+      case 'checkout.session.completed':
+      case 'checkout.session.async_payment_succeeded': {
         const session = event.data.object as Stripe.Checkout.Session;
+        // Delayed payment methods complete checkout before the money settles;
+        // those grant access on async_payment_succeeded instead.
+        if (session.payment_status === 'unpaid') break;
         const userId = session.metadata?.userId;
-        if (userId) {
-          const isLifetime = session.mode === 'payment';
-          await prisma.user.update({
-            where: { id: userId },
-            data: {
-              tier: 'premium',
-              stripeCustomerId: session.customer as string,
-              ...(isLifetime && { lifetimePurchase: true }),
-            },
+        if (!userId) break;
+
+        const isLifetime = session.mode === 'payment';
+        const customerId = session.customer as string;
+        await prisma.user.update({
+          where: { id: userId },
+          data: {
+            tier: 'premium',
+            stripeCustomerId: customerId,
+            ...(isLifetime && { lifetimePurchase: true }),
+          },
+        });
+
+        if (isLifetime) {
+          // Stop billing any subscription the buyer had before going lifetime.
+          const subscriptions = await stripe.subscriptions.list({
+            customer: customerId,
+            status: 'active',
           });
+          for (const sub of subscriptions.data) {
+            await stripe.subscriptions.cancel(sub.id);
+          }
         }
         break;
       }
@@ -59,14 +81,20 @@ export async function POST(request: NextRequest) {
 
       case 'customer.subscription.updated': {
         const subscription = event.data.object as Stripe.Subscription;
-        if (subscription.status !== 'active') {
-          await handleSubscriptionDowngrade(subscription.customer as string);
-        } else {
+        const customerId = subscription.customer as string;
+        if (ENDED_STATUSES.has(subscription.status)) {
+          await handleSubscriptionDowngrade(customerId);
+        } else if (
+          subscription.status === 'active' ||
+          subscription.status === 'trialing'
+        ) {
           await prisma.user.updateMany({
-            where: { stripeCustomerId: subscription.customer as string },
+            where: { stripeCustomerId: customerId },
             data: { tier: 'premium' },
           });
         }
+        // past_due / incomplete / paused: keep current access while Stripe
+        // retries the payment; a final failure arrives as canceled/unpaid.
         break;
       }
     }

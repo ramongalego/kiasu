@@ -162,11 +162,8 @@ export async function updateEmail(email: string) {
     return { error: supabaseError.message };
   }
 
-  await prisma.user.update({
-    where: { id: user.id },
-    data: { email: parsed.data },
-  });
-
+  // The app layout syncs the email into our database once Supabase has
+  // confirmed it; writing it here would trust an unverified address.
   revalidatePath('/');
   return { success: true, confirmationRequired: true };
 }

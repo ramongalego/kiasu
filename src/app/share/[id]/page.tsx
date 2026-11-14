@@ -13,13 +13,17 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { id } = await params;
   const list = await prisma.studyList.findFirst({
-    where: { id },
+    where: { id, isPublic: true },
     select: { title: true, description: true },
   });
-  if (!list) return { title: 'List Not Found' };
+  if (!list) return { title: 'Learning path not found' };
   return {
     title: list.title,
-    description: list.description || `Study list: ${list.title}`,
+    description:
+      list.description
+        ?.replace(/<[^>]+>/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim() || `Learning path: ${list.title}`,
   };
 }
 

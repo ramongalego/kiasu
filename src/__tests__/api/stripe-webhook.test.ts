@@ -4,11 +4,17 @@ import { mockPrisma } from '../helpers/mocks';
 
 const mockConstructEvent = vi.fn();
 const mockHandleSubscriptionDowngrade = vi.fn();
+const mockSubscriptionsList = vi.fn();
+const mockSubscriptionsCancel = vi.fn();
 
 vi.mock('@/lib/stripe/client', () => ({
   stripe: {
     webhooks: {
       constructEvent: (...args: unknown[]) => mockConstructEvent(...args),
+    },
+    subscriptions: {
+      list: (...args: unknown[]) => mockSubscriptionsList(...args),
+      cancel: (...args: unknown[]) => mockSubscriptionsCancel(...args),
     },
   },
 }));
@@ -35,6 +41,8 @@ beforeEach(() => {
   mockPrisma.webhookEvent.findUnique.mockResolvedValue(null);
   mockPrisma.webhookEvent.create.mockResolvedValue({});
   mockHandleSubscriptionDowngrade.mockResolvedValue(undefined);
+  mockSubscriptionsList.mockResolvedValue({ data: [] });
+  mockSubscriptionsCancel.mockResolvedValue({});
 });
 
 describe('POST /api/stripe/webhook', () => {
@@ -103,6 +111,47 @@ describe('POST /api/stripe/webhook', () => {
     });
   });
 
+  it('cancels an existing subscription after a lifetime purchase', async () => {
+    mockConstructEvent.mockReturnValue({
+      id: 'evt_test',
+      type: 'checkout.session.completed',
+      data: {
+        object: {
+          mode: 'payment',
+          payment_status: 'paid',
+          metadata: { userId: 'user-1' },
+          customer: 'cus_123',
+        },
+      },
+    });
+    mockSubscriptionsList.mockResolvedValue({ data: [{ id: 'sub_1' }] });
+
+    const res = await POST(makeRequest('{}', 'sig'));
+
+    expect(res.status).toBe(200);
+    expect(mockSubscriptionsCancel).toHaveBeenCalledWith('sub_1');
+  });
+
+  it('does not grant access while a delayed payment is unpaid', async () => {
+    mockConstructEvent.mockReturnValue({
+      id: 'evt_test',
+      type: 'checkout.session.completed',
+      data: {
+        object: {
+          mode: 'payment',
+          payment_status: 'unpaid',
+          metadata: { userId: 'user-1' },
+          customer: 'cus_123',
+        },
+      },
+    });
+
+    const res = await POST(makeRequest('{}', 'sig'));
+
+    expect(res.status).toBe(200);
+    expect(mockPrisma.user.update).not.toHaveBeenCalled();
+  });
+
   it('does not update the DB when checkout session has no userId metadata', async () => {
     mockConstructEvent.mockReturnValue({
       id: 'evt_test',
@@ -165,7 +214,7 @@ describe('POST /api/stripe/webhook', () => {
     expect(mockHandleSubscriptionDowngrade).not.toHaveBeenCalled();
   });
 
-  it('calls handleSubscriptionDowngrade when subscription status is past_due', async () => {
+  it('keeps access while a subscription is past_due', async () => {
     mockConstructEvent.mockReturnValue({
       id: 'evt_test',
       type: 'customer.subscription.updated',
@@ -175,7 +224,7 @@ describe('POST /api/stripe/webhook', () => {
     const res = await POST(makeRequest('{}', 'sig'));
 
     expect(res.status).toBe(200);
-    expect(mockHandleSubscriptionDowngrade).toHaveBeenCalledWith('cus_123');
+    expect(mockHandleSubscriptionDowngrade).not.toHaveBeenCalled();
     expect(mockPrisma.user.updateMany).not.toHaveBeenCalled();
   });
 

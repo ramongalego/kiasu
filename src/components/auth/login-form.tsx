@@ -1,9 +1,8 @@
 'use client';
 
-import { createClient } from '@/lib/supabase/client';
 import { Card, Button, Container, Skeleton } from '@/components/ui';
 import { loginSchema } from '@/lib/validations/schemas';
-import { resolveUsernameToEmail } from '@/app/auth/actions';
+import { signInWithIdentifier } from '@/app/auth/actions';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState, type FormEvent } from 'react';
@@ -35,26 +34,9 @@ export function LoginForm() {
     setErrors({});
     setLoading(true);
 
-    const supabase = createClient();
-    let loginEmail = identifier;
-
-    // If identifier doesn't contain @, treat as username
-    if (!identifier.includes('@')) {
-      const resolved = await resolveUsernameToEmail(identifier);
-      if (resolved.error || !resolved.email) {
-        toast.error(resolved.error ?? 'Username not found');
-        setLoading(false);
-        return;
-      }
-      loginEmail = resolved.email;
-    }
-
-    const { error } = await supabase.auth.signInWithPassword({
-      email: loginEmail,
-      password,
-    });
+    const { error } = await signInWithIdentifier({ identifier, password });
     if (error) {
-      toast.error(error.message);
+      toast.error(error);
       setLoading(false);
       return;
     }

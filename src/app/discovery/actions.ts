@@ -9,6 +9,7 @@ import { revalidatePath } from 'next/cache';
 import { idSchema, uuidSchema } from '@/lib/validations/schemas';
 import { rateLimit, MINUTE_MS } from '@/lib/rate-limit';
 import { RATE_LIMIT } from '@/lib/constants';
+import { FREE_TIER_LIMITS } from '@/lib/tier-limits';
 
 const voteSchema = z.object({
   studyListId: uuidSchema,
@@ -115,6 +116,27 @@ export async function copyStudyList(studyListId: string) {
 
   if (alreadyCopied) {
     return { error: 'You already saved this list' };
+  }
+
+  const dbUser = await prisma.user.findUnique({
+    where: { id: user.id },
+    select: { tier: true },
+  });
+  if (dbUser?.tier !== 'premium') {
+    const [total, privateCount] = await Promise.all([
+      prisma.studyList.count({ where: { userId: user.id } }),
+      prisma.studyList.count({ where: { userId: user.id, isPublic: false } }),
+    ]);
+    if (total >= FREE_TIER_LIMITS.studyLists) {
+      return {
+        error: `Free accounts are limited to ${FREE_TIER_LIMITS.studyLists} learning paths.`,
+      };
+    }
+    if (privateCount >= FREE_TIER_LIMITS.privateStudyLists) {
+      return {
+        error: `Saved paths are private, and free accounts are limited to ${FREE_TIER_LIMITS.privateStudyLists} private learning paths.`,
+      };
+    }
   }
 
   let slug = generateSlug(source.title);

@@ -120,7 +120,7 @@ describe('updateEmail', () => {
     expect(mockPrisma.user.update).not.toHaveBeenCalled();
   });
 
-  it('updates both Supabase and Prisma on success', async () => {
+  it('asks Supabase to change the email without trusting it yet', async () => {
     mockAuthenticated();
     mockPrisma.user.findFirst.mockResolvedValue(null);
     mockUpdateUser.mockResolvedValue({ error: null });
@@ -132,10 +132,7 @@ describe('updateEmail', () => {
     expect(mockUpdateUser).toHaveBeenCalledWith({
       email: 'new@example.com',
     });
-    expect(mockPrisma.user.update).toHaveBeenCalledWith({
-      where: { id: TEST_USER.id },
-      data: { email: 'new@example.com' },
-    });
+    expect(mockPrisma.user.update).not.toHaveBeenCalled();
     expect(mockRevalidatePath).toHaveBeenCalledWith('/');
   });
 });
