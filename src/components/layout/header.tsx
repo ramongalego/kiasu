@@ -92,6 +92,11 @@ export function Header() {
                 onClick={() =>
                   setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')
                 }
+                aria-label={
+                  resolvedTheme === 'dark'
+                    ? 'Switch to light theme'
+                    : 'Switch to dark theme'
+                }
                 className="cursor-pointer rounded-lg p-2 text-muted-foreground transition-colors duration-200 hover:text-foreground"
               >
                 {resolvedTheme === 'dark' ? (
@@ -115,7 +120,7 @@ export function Header() {
               </>
             ) : (
               <>
-                <Link href="/login">
+                <Link href="/login" className="hidden sm:block">
                   <Button variant="ghost" size="sm">
                     Sign in
                   </Button>

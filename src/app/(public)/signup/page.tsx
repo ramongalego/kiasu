@@ -3,7 +3,7 @@ import { SignupForm } from '@/components/auth';
 import { Container } from '@/components/ui';
 
 export const metadata: Metadata = {
-  title: 'Sign Up',
+  title: 'Create account',
 };
 
 export default function SignupPage() {

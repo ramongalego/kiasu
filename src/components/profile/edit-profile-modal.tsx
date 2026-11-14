@@ -12,15 +12,7 @@ import {
   changePassword,
 } from '@/app/(app)/profile/actions';
 import { getSubscriptionInfo, cancelSubscription } from '@/app/billing/actions';
-import {
-  X,
-  User,
-  Mail,
-  Lock,
-  Check,
-  CircleAlert,
-  Sparkles,
-} from 'lucide-react';
+import { X, User, Mail, Lock, Check, CircleAlert } from 'lucide-react';
 import {
   useCallback,
   useEffect,
@@ -207,12 +199,13 @@ export function EditProfileModal({
         className="absolute inset-0 bg-black/60 backdrop-blur-sm"
         onClick={handleClose}
       />
-      <div className="relative max-h-[85vh] w-full max-w-md overflow-y-auto rounded-2xl border border-border/50 bg-card shadow-2xl">
+      <div className="relative max-h-[85vh] w-full max-w-md overflow-y-auto rounded-xl border border-border/50 bg-card shadow-2xl">
         {/* Header */}
         <div className="sticky top-0 z-10 flex items-center justify-between border-b border-border/50 bg-card/95 px-6 py-4 backdrop-blur-sm">
           <h2 className="text-lg font-semibold">Edit profile</h2>
           <button
             onClick={handleClose}
+            aria-label="Close"
             className="cursor-pointer rounded-lg p-1.5 transition-colors duration-200 hover:bg-muted"
           >
             <X className="h-4 w-4" />
@@ -328,16 +321,9 @@ export function EditProfileModal({
           {/* ── Password Section ─────────────────────────────── */}
           {hasPassword && (
             <>
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-border/50" />
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-card px-2 text-muted-foreground">
-                    Security
-                  </span>
-                </div>
-              </div>
+              <h3 className="border-t border-border/50 pt-5 text-sm font-semibold">
+                Password
+              </h3>
 
               <form onSubmit={handlePasswordSubmit} className="space-y-4">
                 <div className="space-y-4">
@@ -411,24 +397,14 @@ export function EditProfileModal({
           {/* ── Subscription Section ─────────────────────────── */}
           {isPremium && (
             <>
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-border/50" />
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-card px-2 text-muted-foreground">
-                    Subscription
-                  </span>
-                </div>
-              </div>
+              <h3 className="border-t border-border/50 pt-5 text-sm font-semibold">
+                Plan
+              </h3>
 
               <div className="space-y-3">
-                <div className="rounded-xl border border-amber-400/30 px-4 py-3">
+                <div className="rounded-xl border border-border/50 px-4 py-3">
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Sparkles className="h-4 w-4 text-amber-500" />
-                      <span className="text-sm font-medium">Premium</span>
-                    </div>
+                    <span className="text-sm font-medium">Premium</span>
                     {subInfo?.cancelAtPeriodEnd ? (
                       <span className="text-xs text-muted-foreground">
                         {subInfo.currentPeriodEnd

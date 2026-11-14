@@ -2,11 +2,10 @@ import type { Metadata } from 'next';
 import { createClient } from '@/lib/supabase/server';
 import { prisma } from '@/lib/prisma/client';
 import { notFound } from 'next/navigation';
-import { Container, Avatar } from '@/components/ui';
+import { Container, Avatar, Badge } from '@/components/ui';
 import { ProfileAvatar } from '@/components/profile/profile-avatar';
 import { EditProfileButton } from '@/components/profile/edit-profile-button';
 import { ProfileStudyListCard } from '@/components/profile/profile-study-list-card';
-import { Sparkles } from 'lucide-react';
 import { USER_PROFILE } from '@/lib/constants';
 
 export async function generateMetadata({
@@ -106,10 +105,10 @@ export default async function PublicProfilePage({
 
   return (
     <Container as="section" className="py-12">
-      <div className="mx-auto max-w-md overflow-hidden rounded-2xl border border-border/50 bg-card shadow-lg">
-        {/* Gradient banner */}
-        <div className="relative h-28 bg-gradient-to-r from-indigo-500 to-violet-500">
-          <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 rounded-full border-4 border-card shadow-lg shadow-indigo-500/20">
+      <div className="mx-auto max-w-md overflow-hidden rounded-xl border border-border/50 bg-card shadow-sm">
+        {/* Banner */}
+        <div className="relative h-28 bg-muted">
+          <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 rounded-full border-4 border-card">
             {isOwner ? (
               <ProfileAvatar
                 src={avatarSrc}
@@ -132,10 +131,7 @@ export default async function PublicProfilePage({
           )}
           {user.tier === 'premium' && (
             <div className="mt-2 flex justify-center">
-              <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-amber-400 to-orange-400 px-2.5 py-0.5 text-xs font-semibold text-white shadow-sm shadow-amber-500/30">
-                <Sparkles className="h-3 w-3" />
-                Premium
-              </span>
+              <Badge>Premium</Badge>
             </div>
           )}
           {user.name && (
@@ -158,7 +154,7 @@ export default async function PublicProfilePage({
           <div className="py-4 text-center">
             <p className="text-lg font-semibold">{studyLists.length}</p>
             <p className="text-xs text-muted-foreground">
-              {studyLists.length === 1 ? 'List' : 'Lists'}
+              {studyLists.length === 1 ? 'Learning path' : 'Learning paths'}
             </p>
           </div>
           <div className="border-x border-border/50 py-4 text-center">
@@ -189,7 +185,7 @@ export default async function PublicProfilePage({
 
       {/* Learning Paths */}
       <div className="mx-auto mt-10 max-w-4xl">
-        <h2 className="mb-4 text-lg font-semibold">Learning Paths</h2>
+        <h2 className="mb-4 text-lg font-semibold">Learning paths</h2>
         {studyLists.length > 0 ? (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {studyLists.map((list) => (

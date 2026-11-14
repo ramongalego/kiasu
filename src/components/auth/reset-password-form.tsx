@@ -38,7 +38,7 @@ export function ResetPasswordForm() {
       return;
     }
 
-    toast.success('Password updated successfully');
+    toast.success('Password updated');
     router.push('/dashboard');
     router.refresh();
   };
@@ -52,7 +52,7 @@ export function ResetPasswordForm() {
         <div className="text-center">
           <h1 className="text-2xl font-bold">Set a new password</h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            Choose a strong password for your account.
+            Use at least 6 characters.
           </p>
         </div>
 

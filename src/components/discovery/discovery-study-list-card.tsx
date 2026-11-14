@@ -5,7 +5,7 @@ import { getCategoryIcon, CATEGORIES } from '@/lib/categories';
 import { VoteButtons } from '@/components/discovery/vote-buttons';
 import { CopyStudyListButton } from '@/components/discovery/copy-study-list-button';
 import { AdminActionsMenu } from '@/components/discovery/admin-actions-menu';
-import { BookOpen, Sparkles } from 'lucide-react';
+import { BookOpen } from 'lucide-react';
 
 interface DiscoveryStudyListCardProps {
   list: {
@@ -95,7 +95,9 @@ export function DiscoveryStudyListCard({
                 {username}
               </span>
               {list.user.tier === 'premium' && (
-                <Sparkles className="h-3 w-3 shrink-0 text-amber-400" />
+                <span className="shrink-0 text-[11px] font-medium text-primary">
+                  Premium
+                </span>
               )}
             </span>
           </Link>
@@ -112,7 +114,9 @@ export function DiscoveryStudyListCard({
                 {username}
               </span>
               {list.user.tier === 'premium' && (
-                <Sparkles className="h-3 w-3 shrink-0 text-amber-400" />
+                <span className="shrink-0 text-[11px] font-medium text-primary">
+                  Premium
+                </span>
               )}
             </span>
           </div>

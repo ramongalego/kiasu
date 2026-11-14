@@ -17,7 +17,7 @@ type TicketType = 'bug' | 'feedback' | 'support';
 
 const TYPE_LABELS: Record<TicketType, string> = {
   feedback: 'Feedback',
-  bug: 'Bug Report',
+  bug: 'Bug report',
   support: 'Support',
 };
 
@@ -63,7 +63,7 @@ export function SupportModal({ open, onClose }: SupportModalProps) {
       if ('error' in res) {
         toast.error(res.error);
       } else {
-        toast.success('Message sent!');
+        toast.success('Message sent');
         handleClose();
       }
     });
@@ -78,12 +78,13 @@ export function SupportModal({ open, onClose }: SupportModalProps) {
         className="absolute inset-0 bg-black/60 backdrop-blur-sm"
         onClick={handleClose}
       />
-      <div className="relative w-full max-w-md rounded-2xl border border-border/50 bg-card shadow-2xl">
+      <div className="relative w-full max-w-md rounded-xl border border-border/50 bg-card shadow-2xl">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-border/50 px-6 py-4">
           <h2 className="text-lg font-semibold">Report an issue</h2>
           <button
             onClick={handleClose}
+            aria-label="Close"
             className="cursor-pointer rounded-lg p-1.5 transition-colors duration-200 hover:bg-muted"
           >
             <X className="h-4 w-4" />

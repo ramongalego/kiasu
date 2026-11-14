@@ -107,7 +107,6 @@ export function LoginForm() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className={inputClass('password')}
-              placeholder="At least 6 characters"
             />
             {errors.password && (
               <p className="mt-1 text-xs text-destructive">{errors.password}</p>

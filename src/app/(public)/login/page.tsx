@@ -3,7 +3,7 @@ import { LoginForm } from '@/components/auth';
 import { Container } from '@/components/ui';
 
 export const metadata: Metadata = {
-  title: 'Log In',
+  title: 'Sign in',
 };
 
 export default function LoginPage() {

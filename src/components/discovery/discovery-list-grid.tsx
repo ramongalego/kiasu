@@ -68,7 +68,7 @@ export function DiscoveryListGrid({
         </div>
       ) : (
         <p className="mt-8 text-sm text-muted-foreground">
-          No learning paths found. Try a different category!
+          No public learning paths in this category yet.
         </p>
       )}
 

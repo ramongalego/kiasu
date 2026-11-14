@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { Button } from '@/components/ui';
-import { Plus, Sparkles, Zap } from 'lucide-react';
+import { Badge, Button } from '@/components/ui';
+import { Plus, Zap } from 'lucide-react';
 import { FREE_TIER_LIMITS } from '@/lib/tier-limits';
 import { UpgradeModal } from './upgrade-modal';
 
@@ -32,20 +32,14 @@ export function DashboardHeader({
     <>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold">My Learning Paths</h1>
-          <p className="mt-1 text-muted-foreground">
-            Manage and organize your learning paths
-          </p>
+          <h1 className="text-2xl font-bold">My learning paths</h1>
           {isPremium ? (
-            <div className="mt-4">
-              <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-amber-400 to-orange-400 px-2.5 py-0.5 text-xs font-semibold text-white shadow-sm shadow-amber-500/30">
-                <Sparkles className="h-3 w-3" />
-                Premium
-              </span>
+            <div className="mt-3">
+              <Badge>Premium</Badge>
             </div>
           ) : (
             <>
-              <div className="mt-4 flex items-center gap-4 text-xs text-muted-foreground/60">
+              <div className="mt-3 flex items-center gap-4 text-xs text-muted-foreground">
                 <span>
                   <span
                     className={
@@ -56,7 +50,7 @@ export function DashboardHeader({
                   >
                     {totalCount}/{FREE_TIER_LIMITS.studyLists}
                   </span>{' '}
-                  Learning Paths
+                  learning paths
                 </span>
                 <span>·</span>
                 <span>
@@ -69,7 +63,7 @@ export function DashboardHeader({
                   >
                     {privateCount}/{FREE_TIER_LIMITS.privateStudyLists}
                   </span>{' '}
-                  Private Learning Paths
+                  private
                 </span>
                 {atLimit && (
                   <button
@@ -83,9 +77,9 @@ export function DashboardHeader({
               </div>
               {totalCount > FREE_TIER_LIMITS.studyLists && (
                 <div className="mt-3 rounded-lg border border-border/60 bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
-                  You&apos;re over the free plan list limit. You can still
-                  access all your lists, but you can&apos;t create new ones
-                  until you{' '}
+                  You&apos;re over the free plan limit. You can still open all
+                  your learning paths, but you can&apos;t create new ones until
+                  you{' '}
                   <button
                     onClick={() => setUpgradeOpen(true)}
                     className="font-medium text-primary underline-offset-2 hover:underline"
@@ -102,7 +96,7 @@ export function DashboardHeader({
         {hasLists && (
           <Button onClick={onCreateClick}>
             <Plus className="mr-2 h-4 w-4" />
-            New list
+            New learning path
           </Button>
         )}
       </div>

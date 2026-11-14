@@ -107,7 +107,7 @@ export async function copyStudyList(studyListId: string) {
   }
 
   if (source.userId === user.id) {
-    return { error: 'You cannot copy your own list' };
+    return { error: 'This is your own learning path' };
   }
 
   const alreadyCopied = await prisma.studyList.findFirst({
@@ -115,7 +115,7 @@ export async function copyStudyList(studyListId: string) {
   });
 
   if (alreadyCopied) {
-    return { error: 'You already saved this list' };
+    return { error: 'You’ve already saved this learning path' };
   }
 
   const dbUser = await prisma.user.findUnique({

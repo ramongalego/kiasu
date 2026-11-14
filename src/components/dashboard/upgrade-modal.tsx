@@ -2,9 +2,9 @@
 
 import { useEffect, useTransition } from 'react';
 import { toast } from 'sonner';
-import { X, Check, Zap } from 'lucide-react';
+import { X, Check } from 'lucide-react';
 import { Button } from '@/components/ui';
-import { FREE_TIER_LIMITS } from '@/lib/tier-limits';
+import { FREE_TIER_LIMITS, PREMIUM_LIFETIME_PRICE } from '@/lib/tier-limits';
 import { createLifetimeCheckoutSession } from '@/app/billing/actions';
 
 interface UpgradeModalProps {
@@ -16,8 +16,8 @@ interface UpgradeModalProps {
 const FREE_FEATURES = [
   `Up to ${FREE_TIER_LIMITS.studyLists} learning paths`,
   `Up to ${FREE_TIER_LIMITS.privateStudyLists} private paths`,
-  'Study item tracking',
-  'Public discovery',
+  'Track progress on every item',
+  'Share paths publicly',
 ];
 
 const PREMIUM_FEATURES = [
@@ -60,6 +60,7 @@ export function UpgradeModal({
         {/* Close */}
         <button
           onClick={onClose}
+          aria-label="Close"
           className="absolute right-3 top-3 cursor-pointer rounded-lg p-1 transition-colors duration-200 hover:bg-muted sm:right-4 sm:top-4"
         >
           <X className="h-5 w-5" />
@@ -67,24 +68,18 @@ export function UpgradeModal({
 
         {/* Header copy */}
         <div className="mb-4 pr-6 text-center sm:mb-6">
-          <h2 className="text-xl font-bold sm:text-2xl">
-            Unlock Your Full Potential
-          </h2>
+          <h2 className="text-xl font-bold sm:text-2xl">Upgrade to Premium</h2>
           {atLimit ? (
             <p className="mt-2 text-sm text-muted-foreground">
-              You&apos;ve hit your free plan limit — and that&apos;s actually a
-              great sign. You&apos;re building something real.{' '}
-              <span className="font-medium text-foreground">
-                Let Premium take you the rest of the way.
-              </span>
+              You&apos;ve reached a free plan limit. Free accounts get{' '}
+              {FREE_TIER_LIMITS.studyLists} learning paths,{' '}
+              {FREE_TIER_LIMITS.privateStudyLists} of them private. Premium
+              removes both limits.
             </p>
           ) : (
             <p className="mt-2 text-sm text-muted-foreground">
-              You&apos;re off to a great start. When you&apos;re ready to go
-              further,{' '}
-              <span className="font-medium text-foreground">
-                Premium removes every limit so nothing slows you down.
-              </span>
+              Premium removes the learning path limits. One payment, no
+              subscription.
             </p>
           )}
         </div>
@@ -102,11 +97,11 @@ export function UpgradeModal({
                 $0
                 <span className="text-base font-normal text-muted-foreground">
                   {' '}
-                  / month
+                  forever
                 </span>
               </p>
               <p className="mt-1 text-xs text-muted-foreground">
-                Forever free, no credit card needed
+                No credit card needed
               </p>
             </div>
 
@@ -127,20 +122,16 @@ export function UpgradeModal({
           {/* Premium */}
           <div className="order-1 flex flex-col rounded-xl border-2 border-primary/40 bg-primary/5 p-5 sm:order-2">
             <div className="mb-4">
-              <span className="inline-flex items-center gap-1 rounded-full bg-primary/15 px-2.5 py-0.5 text-xs font-semibold text-primary">
-                <Zap className="h-3 w-3" />
-                Best value
-              </span>
-              <p className="mt-3 text-xl font-bold">Premium</p>
+              <p className="text-xl font-bold sm:mt-9">Premium</p>
               <p className="mt-1 text-3xl font-bold">
-                $9.99
+                {PREMIUM_LIFETIME_PRICE}
                 <span className="text-base font-normal text-muted-foreground">
                   {' '}
                   one-time
                 </span>
               </p>
               <p className="mt-1 text-xs text-muted-foreground">
-                Pay once, unlock everything forever.
+                Pay once, keep it forever.
               </p>
             </div>
 
@@ -163,8 +154,9 @@ export function UpgradeModal({
                 })
               }
             >
-              <Zap className="mr-2 h-4 w-4" />
-              {pending ? 'Redirecting...' : 'Upgrade Now'}
+              {pending
+                ? 'Opening checkout…'
+                : `Upgrade for ${PREMIUM_LIFETIME_PRICE}`}
             </Button>
             <p className="mt-2 text-center text-xs text-muted-foreground">
               One-time payment · Secure checkout via Stripe

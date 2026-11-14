@@ -3,7 +3,7 @@ import { ResetPasswordForm } from '@/components/auth';
 import { Container } from '@/components/ui';
 
 export const metadata: Metadata = {
-  title: 'Reset Password',
+  title: 'Reset password',
 };
 
 export default function ResetPasswordPage() {

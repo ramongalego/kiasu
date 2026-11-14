@@ -67,7 +67,9 @@ export default async function SharedStudyListPage({
           <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
             <Lock className="h-6 w-6 text-muted-foreground" />
           </div>
-          <h1 className="mt-4 text-xl font-semibold">This list is private</h1>
+          <h1 className="mt-4 text-xl font-semibold">
+            This learning path is private
+          </h1>
           <p className="mt-2 max-w-sm text-sm text-muted-foreground">
             The owner has made this learning path private. Only they can view
             its contents.

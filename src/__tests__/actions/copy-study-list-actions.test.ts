@@ -63,7 +63,7 @@ describe('copyStudyList', () => {
     });
 
     const result = await copyStudyList('list-1');
-    expect(result).toEqual({ error: 'You cannot copy your own list' });
+    expect(result).toEqual({ error: 'This is your own learning path' });
   });
 
   it('returns error when list was already copied', async () => {
@@ -73,7 +73,9 @@ describe('copyStudyList', () => {
       .mockResolvedValueOnce({ id: 'existing-copy' }); // alreadyCopied check
 
     const result = await copyStudyList('list-1');
-    expect(result).toEqual({ error: 'You already saved this list' });
+    expect(result).toEqual({
+      error: 'You’ve already saved this learning path',
+    });
     expect(mockPrisma.$transaction).not.toHaveBeenCalled();
   });
 

@@ -46,7 +46,7 @@ export function CopyStudyListButton({
         ) : (
           <Bookmark className="h-4 w-4" />
         )}
-        {copied ? 'Saved!' : 'Save to my Dashboard'}
+        {copied ? 'Saved' : 'Save to my dashboard'}
       </button>
     );
   }
@@ -57,7 +57,7 @@ export function CopyStudyListButton({
       disabled={isPending || copied}
       className="relative z-10 cursor-pointer rounded-full p-1.5 text-muted-foreground transition-colors hover:text-primary"
       aria-label="Save learning path"
-      title="Save to my Dashboard"
+      title="Save to my dashboard"
     >
       {isPending ? (
         <Loader2 className="h-4 w-4 animate-spin" />

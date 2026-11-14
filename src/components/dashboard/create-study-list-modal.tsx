@@ -76,6 +76,7 @@ export function CreateStudyListModal({
           <h2 className="text-lg font-semibold">Create learning path</h2>
           <button
             onClick={onClose}
+            aria-label="Close"
             className="cursor-pointer rounded-lg p-1 transition-colors duration-200 hover:bg-muted"
           >
             <X className="h-5 w-5" />

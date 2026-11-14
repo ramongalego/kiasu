@@ -34,7 +34,7 @@ export function StudyListHeader({
         className="inline-flex cursor-pointer items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
       >
         <ArrowLeft className="h-4 w-4" />
-        Back to lists
+        All learning paths
       </Link>
 
       <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
@@ -43,6 +43,7 @@ export function StudyListHeader({
             <h1 className="truncate text-2xl font-bold">{title}</h1>
             <button
               onClick={onEditClick}
+              aria-label="Edit learning path"
               className="shrink-0 cursor-pointer rounded-lg p-1.5 text-muted-foreground transition-colors duration-200 hover:bg-muted hover:text-foreground"
             >
               <Pencil className="h-4 w-4" />

@@ -3,7 +3,7 @@ import { ForgotPasswordForm } from '@/components/auth';
 import { Container } from '@/components/ui';
 
 export const metadata: Metadata = {
-  title: 'Forgot Password',
+  title: 'Forgot password',
 };
 
 export default function ForgotPasswordPage() {

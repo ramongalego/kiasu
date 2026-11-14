@@ -322,7 +322,7 @@ export function StudyItemList({
           <ItemsEmptyState onCreateClick={() => setCreateModalOpen(true)} />
         ) : visibleItems.length === 0 ? (
           <p className="py-8 text-center text-sm text-muted-foreground">
-            All items completed. Nice work!
+            All items completed. Select Show completed to see them.
           </p>
         ) : (
           <DndContext

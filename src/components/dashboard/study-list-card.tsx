@@ -125,12 +125,14 @@ export function StudyListCard({ list, onEdit, onDelete }: StudyListCardProps) {
               <button
                 {...attributes}
                 {...listeners}
+                aria-label="Drag to reorder"
                 className="cursor-grab rounded-lg p-1.5 text-muted-foreground transition-colors duration-200 hover:bg-muted hover:text-foreground active:cursor-grabbing"
               >
                 <GripVertical className="h-4 w-4" />
               </button>
               <button
                 onClick={() => setEditOpen(true)}
+                aria-label="Edit learning path"
                 className="cursor-pointer rounded-lg p-1.5 text-muted-foreground transition-colors duration-200 hover:bg-muted hover:text-foreground"
               >
                 <Pencil className="h-4 w-4" />

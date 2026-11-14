@@ -78,6 +78,10 @@ export function StudyItemRow({
         )}
       >
         <button
+          type="button"
+          role="checkbox"
+          aria-checked={item.completed}
+          aria-label={`Mark “${item.title}” complete`}
           onClick={onToggle}
           className="flex h-5 w-5 shrink-0 cursor-pointer items-center justify-center rounded border border-border transition-all duration-200 data-[checked=true]:border-primary data-[checked=true]:bg-primary"
           data-checked={item.completed}
@@ -164,6 +168,7 @@ export function StudyItemRow({
                 onClick={onSendToTop}
                 className="cursor-pointer rounded-lg p-2 text-muted-foreground transition-colors duration-200 hover:bg-muted hover:text-foreground"
                 title="Send to top"
+                aria-label="Send to top"
               >
                 <ArrowUpToLine className="h-4 w-4" />
               </button>
@@ -171,18 +176,21 @@ export function StudyItemRow({
             <button
               {...attributes}
               {...listeners}
+              aria-label="Drag to reorder"
               className="cursor-grab rounded-lg p-2 text-muted-foreground transition-colors duration-200 hover:bg-muted hover:text-foreground active:cursor-grabbing"
             >
               <GripVertical className="h-4 w-4" />
             </button>
             <button
               onClick={() => setEditOpen(true)}
+              aria-label="Edit item"
               className="cursor-pointer rounded-lg p-2 text-muted-foreground transition-colors duration-200 hover:bg-muted hover:text-foreground"
             >
               <Pencil className="h-4 w-4" />
             </button>
             <button
               onClick={onDelete}
+              aria-label="Delete item"
               className="cursor-pointer rounded-lg p-2 text-muted-foreground transition-colors duration-200 hover:bg-muted hover:text-destructive"
             >
               <Trash2 className="h-4 w-4" />

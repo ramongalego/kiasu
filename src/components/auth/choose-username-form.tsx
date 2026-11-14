@@ -49,7 +49,7 @@ export function ChooseUsernameForm() {
       <div className="text-center">
         <h1 className="text-2xl font-bold">Choose a username</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Pick a unique username for your Kiasu profile
+          Shown on your profile and your public learning paths.
         </p>
       </div>
 
